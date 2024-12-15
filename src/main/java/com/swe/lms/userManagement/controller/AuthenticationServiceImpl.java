@@ -1,6 +1,6 @@
 package com.swe.lms.userManagement.controller;
 
-import com.swe.lms.security.JwtServiceImpl;
+import com.swe.lms.security.JwtService;
 import com.swe.lms.security.dao.request.SignUpRequest;
 import com.swe.lms.security.dao.request.SigninRequest;
 import com.swe.lms.security.dao.response.JwtAuthenticationResponse;
@@ -18,7 +18,7 @@ import com.swe.lms.userManagement.entity.Role;
 public class AuthenticationServiceImpl implements AuthenticationService{
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtServiceImpl jwtServiceImpl;
+    private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
 
@@ -39,7 +39,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.ADMIN).build();
         userRepository.save(user);
-        var jwt = jwtServiceImpl.generateToken(user);
+        var jwt = jwtService.generateToken(user);
         return AuthenticationResponse.builder().token(jwt).build();
     }
 
@@ -51,7 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
                 )
         );//if not correct an exception will be thrown, if correct generate token and send it back
         var user = userRepository.findByUsername(request.getUsername()).orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
-        var jwtToken= jwtServiceImpl.generateToken(user);
+        var jwtToken= jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
@@ -59,11 +59,21 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     @Override
     public JwtAuthenticationResponse signup(SignUpRequest request) {
-        return null;
+        var user = User.builder().username(request.getUsername())
+                .email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
+                .role(Role.USER).build();
+        userRepository.save(user);
+        var jwt = jwtService.generateToken(user);
+        return JwtAuthenticationResponse.builder().token(jwt).build();
     }
 
     @Override
     public JwtAuthenticationResponse signin(SigninRequest request) {
-        return null;
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+        var jwt = jwtService.generateToken(user);
+        return JwtAuthenticationResponse.builder().token(jwt).build();
     }
 }

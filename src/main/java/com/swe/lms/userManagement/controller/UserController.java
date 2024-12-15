@@ -1,5 +1,8 @@
 package com.swe.lms.userManagement.controller;
 
+import com.swe.lms.security.dao.request.SignUpRequest;
+import com.swe.lms.security.dao.request.SigninRequest;
+import com.swe.lms.security.dao.response.JwtAuthenticationResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,15 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final AuthenticationServiceImpl authenticationServiceImpl;
+    private final AuthenticationService authenticationService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request){
-        return  ResponseEntity.ok(authenticationServiceImpl.register(request));
+    public ResponseEntity<JwtAuthenticationResponse> register(@RequestBody SignUpRequest request){
+        return  ResponseEntity.ok(authenticationService.signup(request));
     }
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest request){
-        return  ResponseEntity.ok(authenticationServiceImpl.authenticate(request));
+    public ResponseEntity<JwtAuthenticationResponse> register(@RequestBody SigninRequest request){
+        return  ResponseEntity.ok(authenticationService.signin(request));
     }
 
 //    @PostMapping("/register")

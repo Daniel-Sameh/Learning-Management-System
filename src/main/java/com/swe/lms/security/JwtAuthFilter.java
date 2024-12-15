@@ -18,9 +18,8 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-
 public class JwtAuthFilter extends OncePerRequestFilter{
-    private final JwtServiceImpl jwtServiceImpl;
+    private final JwtService jwtService;
     private final UserService userService;
 
 
@@ -37,11 +36,11 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         }
 
         token=authHeader.substring(7);//starts after the word Bearer (jwt token)
-        username= jwtServiceImpl.extractUsername(token);//extract username from jwt token
+        username= jwtService.extractUsername(token);//extract username from jwt token
 
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails= userService.userDetailsService().loadUserByUsername(username);
-            if(jwtServiceImpl.isTokenValid(token,userDetails)){
+            if(jwtService.isTokenValid(token,userDetails)){
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken= new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails( new WebAuthenticationDetailsSource().buildDetails(request));
@@ -66,9 +65,9 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 //        filterChain.doFilter(request, response);
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return path.equals("/api/register") || path.equals("/api/generateToken");
-    }
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) {
+//        String path = request.getRequestURI();
+//        return path.equals("/api/register") || path.equals("/api/generateToken");
+//    }
 }
