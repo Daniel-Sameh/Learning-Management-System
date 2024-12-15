@@ -27,4 +27,10 @@ public class Lecture {
 
     @Column(name="OTP", nullable=false)
     private String OTP;
+
+    public void applyOTP(User user, String OTP){
+        if(OTP.equals(this.OTP) && user.getRole().equals("Student") && !attendanceList.contains(user)){
+            attendanceList.add(user);
+        }
+    }
 }

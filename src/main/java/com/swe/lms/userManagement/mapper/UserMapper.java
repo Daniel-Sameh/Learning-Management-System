@@ -2,7 +2,15 @@ package com.swe.lms.userManagement.mapper;
 
 import com.swe.lms.userManagement.dto.UserDto;
 import com.swe.lms.userManagement.entity.User;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserMapper {
 
     public static UserDto mapToUserDto(User user){
