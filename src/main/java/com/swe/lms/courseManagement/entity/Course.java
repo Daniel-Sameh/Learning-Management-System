@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
@@ -37,7 +37,13 @@ public class Course {
     @JoinColumn(name = "instructor_id")
     private User instructor;
 
-    @OneToMany(mappedBy = "course_id")
-    private List<Lecture> lectures;
+     @OneToMany(mappedBy = "course")
+     private List<Lecture> lectures;
+
+    @OneToMany(mappedBy = "course")
+    private List<Post> posts;
+
+
+
 
 }
