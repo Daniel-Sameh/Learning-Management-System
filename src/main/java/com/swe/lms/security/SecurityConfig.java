@@ -1,58 +1,61 @@
 package com.swe.lms.security;
 
-import org.springframework.context.ApplicationListener;
+import com.swe.lms.userManagement.Service.UserInfoService;
+import com.swe.lms.userManagement.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.event.AuthenticationSuccessEvent;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import static org.springframework.security.config.Customizer.withDefaults;
+import com.swe.lms.security.JwtAuthFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
-
+    private final JwtAuthFilter authFilter;
+    public SecurityConfig(JwtAuthFilter authFilter) {
+        this.authFilter = authFilter;
+    }
+    // Create User
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder encoder) {
+        return new UserInfoService(userRepository, encoder);
+    }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationProvider authenticationProvider) throws Exception {
         return http
-                .authorizeHttpRequests(
-                        authorizeHttp -> {
-                            authorizeHttp.requestMatchers("/").permitAll();
-                            authorizeHttp.anyRequest().authenticated();
-                        }
+                .authorizeHttpRequests((authz) -> authz
+                        .requestMatchers("/api/generateToken", "/api/register").permitAll()
+                        .requestMatchers("/api/user/{userid}").authenticated()
                 )
-                .formLogin(l -> l.defaultSuccessUrl("/private"))
-                .logout(l -> l.logoutSuccessUrl("/"))
-                .oauth2Login(withDefaults())
-                .httpBasic(withDefaults())
-//                .with(new RobotAccountConfigurer(), withDefaults())
-//                .addFilterBefore(new ForbiddenFilter(), LogoutFilter.class) // filter before auth/logout
-//                .authenticationProvider(new DanielAuthenticationProvider())
+                .httpBasic(withDefaults()).csrf((csrf) -> csrf.disable())
+                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
     @Bean
-    UserDetailsService userDetailsService(){
-        return new InMemoryUserDetailsManager(
-                User.withUsername("user")
-                        .password("{noop}password")
-                        .roles("user")
-                        .build()
-        );
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder);
+        return authenticationProvider;
+    }
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
-    @Bean
-    ApplicationListener<AuthenticationSuccessEvent> successListener() {
-        return event -> {
-            System.out.println("🎉 [%s] %s".formatted(
-                    event.getAuthentication().getClass().getSimpleName(),
-                    event.getAuthentication().getName()
-            ));
-        };
-    }
 }

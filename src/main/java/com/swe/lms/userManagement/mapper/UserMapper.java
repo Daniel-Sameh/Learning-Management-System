@@ -9,8 +9,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class UserMapper {
 
     public static UserDto mapToUserDto(User user){
