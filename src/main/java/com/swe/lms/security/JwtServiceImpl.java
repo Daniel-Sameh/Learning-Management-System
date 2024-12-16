@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.stereotype.Service;
@@ -23,7 +24,13 @@ public class JwtServiceImpl implements JwtService{
 //    private String jwtSigningKey;
     @Override
     public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userDetails.getAuthorities()
+                .stream()
+                .findFirst() // Assuming a single role
+                .map(GrantedAuthority::getAuthority)
+                .orElseThrow(() -> new IllegalStateException("No role found for user")));
+        return generateToken(claims, userDetails);
     }
     public String generateToken(Map<String, Object> claims, UserDetails userDetails) {
     return Jwts.builder()
@@ -76,5 +83,11 @@ public class JwtServiceImpl implements JwtService{
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    }
+
+    @Override
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("role", String.class); // Extract role as a string
     }
 }

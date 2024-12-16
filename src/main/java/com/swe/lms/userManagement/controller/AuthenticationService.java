@@ -8,4 +8,5 @@ public interface AuthenticationService {
     JwtAuthenticationResponse signup(SignUpRequest request);
 
     JwtAuthenticationResponse signin(SigninRequest request);
+    String changeRole(long userId, String role);
 }

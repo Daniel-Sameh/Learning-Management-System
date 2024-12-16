@@ -41,6 +41,9 @@ public class JwtAuthFilter extends OncePerRequestFilter{
         if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails= userService.userDetailsService().loadUserByUsername(username);
             if(jwtService.isTokenValid(token,userDetails)){
+
+                String role = jwtService.extractRole(token);
+
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken= new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails( new WebAuthenticationDetailsSource().buildDetails(request));
@@ -65,9 +68,9 @@ public class JwtAuthFilter extends OncePerRequestFilter{
 //        filterChain.doFilter(request, response);
     }
 
-//    @Override
-//    protected boolean shouldNotFilter(HttpServletRequest request) {
-//        String path = request.getRequestURI();
-//        return path.equals("/api/register") || path.equals("/api/generateToken");
-//    }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        return path.equals("/api/signup") || path.equals("/api/signin");
+    }
 }

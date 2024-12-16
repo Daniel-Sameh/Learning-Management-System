@@ -69,11 +69,23 @@ public class AuthenticationServiceImpl implements AuthenticationService{
 
     @Override
     public JwtAuthenticationResponse signin(SigninRequest request) {
+//        System.out.println("I AM IN SIGN IN!!!");
+//        System.out.println("____________________________________:::::");
+//        System.out.println(request.getUsername());
+//        System.out.println("____________________________________:::::");
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-        var user = userRepository.findByEmail(request.getEmail())
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        var user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
+    }
+
+    @Override
+    public String changeRole(long userId, String role) {
+        var user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found."));
+        user.setRole(Role.valueOf(role.toUpperCase()));
+        userRepository.save(user);
+        return "Role changed successfully.";
     }
 }

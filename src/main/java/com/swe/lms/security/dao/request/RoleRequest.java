@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SigninRequest {
-    private String username;
-    private String password;
+public class RoleRequest {
+    private String role;
 }
