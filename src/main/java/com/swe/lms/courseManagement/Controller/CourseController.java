@@ -1,6 +1,8 @@
 package com.swe.lms.courseManagement.Controller;
 
 import com.swe.lms.courseManagement.Service.CourseService;
+import com.swe.lms.courseManagement.dto.CourseDTO;
+import com.swe.lms.courseManagement.dto.StudentDTO;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,28 +36,20 @@ public class CourseController {
         return ResponseEntity.ok("User enrolled successfully in the course");
     }
 
-    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     @PostMapping("/create")
-    public ResponseEntity<Course> createCourse(@RequestBody Map<String, Object> courseRequest) {
-        String name = (String) courseRequest.get("name");
-        String code = (String) courseRequest.get("code");
-        Long instructorId = Long.valueOf(courseRequest.get("instructor").toString());
+    public ResponseEntity<CourseDTO> createCourse(@RequestBody Map<String, Object> courseRequest, @RequestHeader("Authorization")String authorizationHeader) {
 
-        // Fetch the instructor by ID from the UserRepository
-        User instructor = userRepository.findById(instructorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header is missing or invalid");
+        }
+        String token = authorizationHeader.substring(7);
 
-        // Create the course object and set its properties
-        Course course = new Course();
-        course.setName(name);
-        course.setCode(code);
-        course.setInstructor(instructor);  // Set the fetched instructor
 
-        // Create and save the course
-        Course createdCourse = courseService.createCourse(course);
+
+        CourseDTO  createdCourse = courseService.createCourse(courseRequest,token);
         return ResponseEntity.ok(createdCourse);
     }
-
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
     @PutMapping("/{courseId}/update")
     public ResponseEntity<Course> updateCourse(@PathVariable Long courseId, @RequestBody Map<String, Object> updatedCourseRequest) {
@@ -74,5 +69,29 @@ public class CourseController {
 
         Course updated = courseService.updateCourse(courseId, updatedCourse);
         return ResponseEntity.ok(updated);
+    }
+    @GetMapping("/view")
+    public ResponseEntity<List<CourseDTO>> viewAllCourses() {
+        // Fetch all courses from the service
+        List<CourseDTO> allCourses = courseService.getAllCourses();
+
+        // Return the list of courses
+        return ResponseEntity.ok(allCourses);
+    }
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @GetMapping("/{courseId}/students")
+    public ResponseEntity<List<StudentDTO>> getStudentsEnrolledInCourse(@PathVariable Long courseId) {
+        List<StudentDTO> students = courseService.getStudentsEnrolledInCourse(courseId);
+        return ResponseEntity.ok(students);
+    }
+
+    @DeleteMapping("/{courseId}/remove/{studentId}")
+    public ResponseEntity<String> removestudent(@PathVariable Long courseId, @PathVariable Long studentId) {
+        boolean isRemoved = courseService.removeStudentFromCourse(courseId, studentId);
+        if (isRemoved) {
+            return ResponseEntity.ok("Student removed from course successfully");
+        } else {
+            return ResponseEntity.status(404).body("Course or Student not found");
+        }
     }
 }
