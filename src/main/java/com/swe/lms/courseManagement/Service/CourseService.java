@@ -30,4 +30,7 @@ public class CourseService {
             throw new IllegalStateException("User is already enrolled in this course");
         }
     }
+    public Optional<Course> findById(Long courseId) {
+        return courseRepository.findById(courseId);
+    }
 }
