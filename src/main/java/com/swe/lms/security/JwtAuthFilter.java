@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
+import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
@@ -42,10 +44,19 @@ public class JwtAuthFilter extends OncePerRequestFilter{
             UserDetails userDetails= userService.userDetailsService().loadUserByUsername(username);
             if(jwtService.isTokenValid(token,userDetails)){
 
+//                String role = jwtService.extractRole(token);
+//                if (request.getRequestURI().contains("/admin/") && !"ADMIN".equals(role)) {
+//                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//                    response.getWriter().write("Access Denied: Insufficient permissions");
+//                    return;
+//                }
                 String role = jwtService.extractRole(token);
+                String prefixedRole = "ROLE_" + role;
 
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
-                UsernamePasswordAuthenticationToken authToken= new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authToken= new UsernamePasswordAuthenticationToken(userDetails,
+                        null,
+                        Collections.singleton(new SimpleGrantedAuthority(prefixedRole)));
                 authToken.setDetails( new WebAuthenticationDetailsSource().buildDetails(request));
                 context.setAuthentication(authToken);
                 SecurityContextHolder.setContext(context);

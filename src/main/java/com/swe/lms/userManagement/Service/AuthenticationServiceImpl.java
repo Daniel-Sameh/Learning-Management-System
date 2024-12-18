@@ -1,9 +1,13 @@
-package com.swe.lms.userManagement.controller;
+package com.swe.lms.userManagement.Service;
 
 import com.swe.lms.security.JwtService;
 import com.swe.lms.security.dao.request.SignUpRequest;
 import com.swe.lms.security.dao.request.SigninRequest;
 import com.swe.lms.security.dao.response.JwtAuthenticationResponse;
+import com.swe.lms.userManagement.Service.AuthenticationService;
+import com.swe.lms.userManagement.controller.AuthenticationRequest;
+import com.swe.lms.userManagement.controller.AuthenticationResponse;
+import com.swe.lms.userManagement.controller.RegisterRequest;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +16,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.swe.lms.userManagement.entity.Role;
+
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 
-public class AuthenticationServiceImpl implements AuthenticationService{
+public class AuthenticationServiceImpl implements AuthenticationService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
@@ -76,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid UserName or Password."));
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
     }
@@ -87,5 +94,16 @@ public class AuthenticationServiceImpl implements AuthenticationService{
         user.setRole(Role.valueOf(role.toUpperCase()));
         userRepository.save(user);
         return "Role changed successfully.";
+    }
+
+    @Override
+    public String deleteUser(long userId) {
+        userRepository.deleteById(userId);
+        return "User deleted successfully.";
+    }
+
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
     }
 }

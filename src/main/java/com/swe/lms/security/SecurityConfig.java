@@ -26,44 +26,25 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 
 @Configuration
 @EnableWebSecurity
-//@EnableMethodSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserService userService;
 
-//    private final AuthenticationProvider authenticationProvider;
-//    private final UserRepository userRepository;
-//    private final UserDetailsService userDetailsService;
-
-
-//    @Bean
-//    public UserInfoService userDetailsService() {
-//        return new UserInfoService(userRepository, passwordEncoder());
-////        return userService.userDetailsService();
-//    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/admin/*").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/*").hasRole("ADMIN")
                         .requestMatchers("/api/signup", "/api/signin").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement((session) -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
-//        return http
-//                .authorizeHttpRequests((authz) -> authz
-//                        .requestMatchers("/api/generateToken", "/api/register").permitAll() // Allow access
-//                        .anyRequest().authenticated() // Secure other endpoints
-//                )
-//                .csrf((csrf) -> csrf.disable()) // Disable CSRF for simplicity
-//                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless session
-//                .authenticationProvider(authenticationProvider)
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter
-//                .build();
+
     }
 
     @Bean

@@ -1,12 +1,18 @@
-package com.swe.lms.userManagement.controller;
+package com.swe.lms.userManagement.Service;
 
 import com.swe.lms.security.dao.request.SignUpRequest;
 import com.swe.lms.security.dao.request.SigninRequest;
 import com.swe.lms.security.dao.response.JwtAuthenticationResponse;
+import com.swe.lms.userManagement.entity.User;
+
+import java.util.List;
 
 public interface AuthenticationService {
     JwtAuthenticationResponse signup(SignUpRequest request);
 
     JwtAuthenticationResponse signin(SigninRequest request);
     String changeRole(long userId, String role);
+
+    String deleteUser(long userId);
+    List<User> getUsers();
 }

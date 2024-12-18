@@ -1,9 +1,9 @@
 package com.swe.lms.userManagement.controller;
 
-import com.swe.lms.security.dao.request.RoleRequest;
 import com.swe.lms.security.dao.request.SignUpRequest;
 import com.swe.lms.security.dao.request.SigninRequest;
 import com.swe.lms.security.dao.response.JwtAuthenticationResponse;
+import com.swe.lms.userManagement.Service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,14 +31,7 @@ public class UserController {
         return  ResponseEntity.ok(authenticationService.signin(request));
     }
 
-    @PutMapping("admin/change_role/{userId}")
-    public ResponseEntity<String> changeRole(@PathVariable("userId") long userId, @RequestBody RoleRequest role){
-        System.out.println("____________________________________:::::");
-        System.out.println(userId);
-        System.out.println(role.getRole());
-        System.out.println("____________________________________:::::");
-        return ResponseEntity.ok(authenticationService.changeRole(userId, role.getRole()));
-    }
+
 
 //    @PostMapping("/register")
 //    public ResponseEntity<String> CreateUser(@RequestBody UserDto user){
