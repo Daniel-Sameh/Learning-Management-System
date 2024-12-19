@@ -41,7 +41,7 @@ public class CourseService {
         }
     }
 
-    public CourseDTO  createCourse(Map<String, Object> courseRequest, String token) {
+     public CourseDTO  createCourse(Map<String, Object> courseRequest, String token) {
         String username;
         String role;
         try {
@@ -76,20 +76,46 @@ public class CourseService {
         return new CourseDTO(savedCourse.getName(), savedCourse.getCode(), instructor.getUsername());
     }
 
-    public Course updateCourse(Long courseId, Course updatedCourseDetails) {
+
+    public CourseDTO updateCourse(Long courseId,Map<String, Object> updatedCourseDetails,String token) {
         Course existingCourse = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
 
-        existingCourse.setName(updatedCourseDetails.getName());
-        existingCourse.setCode(updatedCourseDetails.getCode());
+        String name = (String) updatedCourseDetails.get("name");
+        String code = (String) updatedCourseDetails.get("code");
+        Course Isused = courseRepository.findByNameOrCode(name, code);
+        //2 query code mo5tlf wa name mo5tlf fix lw fe wa2t
+        if (Isused != null && !Isused.getId().equals(existingCourse.getId())) {
+            throw new IllegalArgumentException("Course with the same name or code already exists.");
+        }
+        String role;
+        String username;
 
-        if (updatedCourseDetails.getInstructor() != null) {
-            User instructor = userRepository.findById(updatedCourseDetails.getInstructor().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            role = (String) claims.get("role");
+            username = (String) claims.getSubject();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+        User instructor=userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if ("admin".equalsIgnoreCase(role)) {
+            Long instructorId = Long.valueOf(updatedCourseDetails.get("instructor").toString());
+             instructor = userRepository.findById(instructorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Instructor not found"));
             existingCourse.setInstructor(instructor);
         }
+        else {
+            if (!existingCourse.getInstructor().getId().equals(instructor.getId())) {
+                throw new IllegalArgumentException("You are not authorized to update this course.");
+            }
+        }
+        existingCourse.setName(name);
+        existingCourse.setCode(code);
 
-        return courseRepository.save(existingCourse);
+        courseRepository.save(existingCourse);
+        return new CourseDTO(existingCourse.getName(), existingCourse.getCode(), instructor.getUsername());
     }
     public List<CourseDTO> getAllCourses() {
         // Fetch all courses from the repository
@@ -115,10 +141,23 @@ public class CourseService {
                 .map(student -> new StudentDTO(student.getId(), student.getUsername()))
                 .collect(Collectors.toList());
     }
-    public boolean removeStudentFromCourse(Long courseId, Long studentId) {
+    public boolean removeStudentFromCourse(Long courseId, Long studentId, String token) {
+
+        String username;
+        String role;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            username = (String)claims.getSubject();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+        User instructor=userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found"));
-
+        if(instructor.getId()!=course.getInstructor().getId()){
+            throw new IllegalArgumentException("You are not authorized to remove student from this course.");
+        }
         User student = userRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found"));
 
