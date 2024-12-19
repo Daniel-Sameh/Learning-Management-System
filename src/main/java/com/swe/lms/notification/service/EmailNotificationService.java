@@ -14,7 +14,6 @@ public class EmailNotificationService {
     public void sendNotification(String toEmail, String subject, String body) {
 //        System.out.println(mailSender.toString());
 //        SimpleMailMessage message = new SimpleMailMessage();
-//
 //        message.setTo(toEmail);
 //        message.setSubject(subject);
 //        message.setText(body);

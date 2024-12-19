@@ -1,6 +1,8 @@
 package com.swe.lms.AssessmentManagement.entity;
 
-import com.swe.lms.AssessmentManagement.entity.Questions.IQuestion;
+import com.swe.lms.AssessmentManagement.entity.Questions.Question;
+import com.swe.lms.courseManagement.entity.Course;
+
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -19,10 +21,19 @@ public class QuestionBank {
 
     @Getter
     @OneToMany(cascade = CascadeType.ALL)
-    private List<IQuestion> questions = new ArrayList<>();
+    private List<Question> questions = new ArrayList<>();
 
-    public void addQuestion(IQuestion question) {
+
+    @OneToOne
+    @JoinColumn(name="course_id")
+    private Course course;
+
+    public void addQuestion(Question question) {
         questions.add(question);
+    }
+
+    public void removeQuestion(Question question) {
+        questions.remove(question);
     }
 
 }

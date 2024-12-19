@@ -4,7 +4,10 @@ import com.swe.lms.userManagement.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Data
@@ -19,15 +22,25 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String message;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private boolean read = false;
+
     @ManyToMany
     @JoinTable(
-            name = "notification_receivers",
+            name = "user_notifications",
             joinColumns = @JoinColumn(name = "notification_id"),
-            inverseJoinColumns = @JoinColumn(name = "receiver_id")
+            inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> receivers;
-
-    private String title;
-    private String message;
+    private Set<User> users = new HashSet<>();
 
 }

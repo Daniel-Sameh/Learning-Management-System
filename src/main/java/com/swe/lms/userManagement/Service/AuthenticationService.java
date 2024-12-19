@@ -15,4 +15,5 @@ public interface AuthenticationService {
 
     String deleteUser(long userId);
     List<User> getUsers();
+    User getUserByUsername(String username);
 }

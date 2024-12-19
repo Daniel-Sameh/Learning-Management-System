@@ -1,26 +1,22 @@
 package com.swe.lms.AssessmentManagement.entity.Questions;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 
 import lombok.Data;
 
 
 @Entity
 @Data
-public class ShortAnswerQuestion implements IQuestion {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("SHORT_ANSWER")
+public class ShortAnswerQuestion extends Question {
 
-    private String questionText;
+    @Column(nullable = false)
     private String correctAnswer;
-    private float score;
 
     @Override
     public boolean validateAnswer(Object answer) {
-        return correctAnswer.equalsIgnoreCase((String) answer);
+        return getCorrectAnswer().equalsIgnoreCase((String) answer);
     }
 }

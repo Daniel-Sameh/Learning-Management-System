@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +51,7 @@ public class JwtServiceImpl implements JwtService{
 //    }
     private Key getSignKey() {
         byte[] keyBytes= Decoders.BASE64.decode(SECRET);
+//        byte[] keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

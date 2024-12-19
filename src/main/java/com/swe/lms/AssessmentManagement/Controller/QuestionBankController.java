@@ -1,7 +1,7 @@
 package com.swe.lms.AssessmentManagement.Controller;
 
 import com.swe.lms.AssessmentManagement.Service.QuestionBankService;
-import com.swe.lms.AssessmentManagement.entity.Questions.IQuestion;
+import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,12 +14,12 @@ public class QuestionBankController {
     private QuestionBankService questionBankService;
 
     @PostMapping("/add")
-    public void addQuestion(@RequestBody IQuestion question) {
+    public void addQuestion(@RequestBody Question question) {
         questionBankService.addQuestion(question);
     }
 
     @GetMapping("/getquestions")
-    public List<IQuestion> getQuestions() {
+    public List<Question> getQuestions() {
         return questionBankService.getQuestions();
     }
 }

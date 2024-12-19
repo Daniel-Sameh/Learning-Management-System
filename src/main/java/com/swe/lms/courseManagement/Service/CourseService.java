@@ -3,6 +3,7 @@ package com.swe.lms.courseManagement.Service;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
 import com.swe.lms.notification.service.EmailNotificationService;
+import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
@@ -21,6 +22,9 @@ public class CourseService {
     private UserRepository userRepository;
     @Autowired
     private EmailNotificationService emailService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public void enrollUserInCourse(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
@@ -48,10 +52,7 @@ public class CourseService {
 
     public void notify(String subject, String body, Course course){
         List<User> students = course.getStudents();
-        for(User student: students){
-            // Send notification to each student
-            emailService.sendNotification(student.getEmail(), subject, body);
-        }
+        notificationService.sendNotification(students, subject, body);
     }
     public Course updateCourse(Long courseId, Course updatedCourseDetails) {
         Course existingCourse = courseRepository.findById(courseId)

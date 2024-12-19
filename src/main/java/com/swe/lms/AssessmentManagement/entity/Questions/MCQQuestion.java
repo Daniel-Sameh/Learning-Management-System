@@ -1,25 +1,27 @@
 package com.swe.lms.AssessmentManagement.entity.Questions;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.List;
 
 @Data
 @Entity
-@Table(name="MCQQuestions")
-public class MCQQuestion implements IQuestion {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+@DiscriminatorValue("MCQ")
+@Setter
+@Getter
+public class MCQQuestion extends Question {
 
-    private String questionText;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "question_id")
+    private List<MCQOption> options;
 
-    private List<String> options;
+    @Column(nullable = false)
+    private Integer correctOptionIndex;
 
-    private String correctAnswer;
-
-    private float score;
     @Override
     public boolean validateAnswer(Object answer) {
-        return correctAnswer.equals(answer);
+        return correctOptionIndex.equals(answer);
     }
 }

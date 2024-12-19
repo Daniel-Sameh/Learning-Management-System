@@ -8,5 +8,6 @@ import lombok.Setter;
 @Data
 public class QuestionBankQuizRequest {
     private String title;
-    private int numQuestions;//34an el random function
+    private Integer numQuestions;
+    private Integer timeLimit;
 }

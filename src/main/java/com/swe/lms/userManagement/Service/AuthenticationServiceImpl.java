@@ -1,5 +1,6 @@
 package com.swe.lms.userManagement.Service;
 
+import com.swe.lms.exception.ResourceNotFoundException;
 import com.swe.lms.security.JwtService;
 import com.swe.lms.security.dao.request.SignUpRequest;
 import com.swe.lms.security.dao.request.SigninRequest;
@@ -27,6 +28,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
 
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -105,5 +107,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public List<User> getUsers() {
         return userRepository.findAll();
+    }
+
+    @Override
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found."));
     }
 }

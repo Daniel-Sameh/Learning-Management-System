@@ -1,7 +1,8 @@
 package com.swe.lms.AssessmentManagement.entity.QuestionsFactory;
 
-import com.swe.lms.AssessmentManagement.entity.Questions.IQuestion;
+import com.swe.lms.AssessmentManagement.Service.QuestionRequest;
+import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 
 public interface IQuestionFactory {
-    IQuestion createQuestion(String questionText, Object... params);
+    Question createQuestion(String questionText, Object... params);
 }
