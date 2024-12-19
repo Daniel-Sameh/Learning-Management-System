@@ -11,6 +11,8 @@ import com.swe.lms.userManagement.controller.AuthenticationResponse;
 import com.swe.lms.userManagement.controller.RegisterRequest;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Service;
 import com.swe.lms.userManagement.entity.Role;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
 
 
 
@@ -115,5 +120,48 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public User getUserByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+    }
+
+    public User updateprofile(Map<String, Object>payload, String token,Long userid){
+        String username;
+        String role;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            username = claims.getSubject();
+            role = (String) claims.get("role");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+
+        User userx = userRepository.findByUsername(username).orElseThrow(
+                () -> new ResourceNotFoundException("User not found.")
+        );
+        User user = userRepository.findById(userid).orElseThrow(
+                () -> new ResourceNotFoundException("User not found.")
+        );
+        if (!"admin".equalsIgnoreCase(role) && userx.getId()!=userid){
+            throw new IllegalArgumentException("Access denied");
+        }
+        if (payload.containsKey("name")) {
+            String newName = (String) payload.get("name");
+            Optional<User> existingUserWithName = userRepository.findByUsername(newName);
+            if (existingUserWithName.isPresent()) {
+                throw new IllegalArgumentException("Name is already taken.");
+            }
+            user.setUsername(newName);
+        }
+        if (payload.containsKey("email")) {
+            String newEmail = (String) payload.get("email");
+            Optional<User> existingUserWithEmail = userRepository.findByEmail(newEmail);
+            if (existingUserWithEmail.isPresent()) {
+                throw new IllegalArgumentException("Email is already in use.");
+            }
+            user.setEmail(newEmail);
+        }
+        if(payload.containsKey("password")){
+            user.setPassword(passwordEncoder.encode((String) payload.get("password")));
+        }
+        userRepository.save(user);
+        return user;
     }
 }
