@@ -4,10 +4,6 @@ import com.swe.lms.courseManagement.dto.CourseDTO;
 import com.swe.lms.courseManagement.dto.StudentDTO;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
-
-import com.swe.lms.notification.service.EmailNotificationService;
-import com.swe.lms.notification.service.NotificationService;
-
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
@@ -30,9 +26,6 @@ public class CourseService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private NotificationService notificationService;
-
     public void enrollUserInCourse(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
@@ -50,16 +43,25 @@ public class CourseService {
 
     public CourseDTO  createCourse(Map<String, Object> courseRequest, String token) {
         String username;
+        String role;
         try {
             Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
             username = claims.getSubject();
+            role = (String) claims.get("role");
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid token", e);
         }
 
-        User instructor = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
+        User instructor;
+        Long instructorId;
+        if ("admin".equalsIgnoreCase(role)) {
+            instructorId = Long.valueOf(courseRequest.get("instructor").toString());
+            instructor = userRepository.findById(instructorId)
+                    .orElseThrow(() -> new IllegalArgumentException("Instructor not found"));
+        } else {
+            instructor = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        }
         String name = (String) courseRequest.get("name");
         String code = (String) courseRequest.get("code");
         Course course = new Course();
@@ -72,11 +74,6 @@ public class CourseService {
         }
         Course savedCourse = courseRepository.save(course);
         return new CourseDTO(savedCourse.getName(), savedCourse.getCode(), instructor.getUsername());
-    }
-
-    public void notify(String subject, String body, Course course){
-        List<User> students = course.getStudents();
-        notificationService.sendNotification(students, subject, body);
     }
 
     public Course updateCourse(Long courseId, Course updatedCourseDetails) {
