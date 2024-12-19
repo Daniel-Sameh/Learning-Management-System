@@ -1,5 +1,6 @@
 package com.swe.lms.userManagement.controller;
 
+import com.swe.lms.courseManagement.dto.CourseDTO;
 import com.swe.lms.notification.entity.Notification;
 import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.security.dao.request.SignUpRequest;
@@ -68,7 +69,21 @@ public class UserController {
     }
 
 
+    @PutMapping("/update/profile/{userId}")
+    public ResponseEntity< Map<String, Object>> createCourse(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization")String authorizationHeader, @PathVariable Long userId) {
 
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header is missing or invalid");
+        }
+        String token = authorizationHeader.substring(7);
+
+        User  updated = authenticationService.updateprofile(payload,token,userId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("name", updated.getUsername());
+        response.put("email", updated.getEmail());
+        response.put("role", updated.getRole());
+        return ResponseEntity.ok(response);
+    }
 //    @PostMapping("/register")
 //    public ResponseEntity<String> CreateUser(@RequestBody UserDto user){
 //        String response = String.valueOf(userService.CreateUser(user));
