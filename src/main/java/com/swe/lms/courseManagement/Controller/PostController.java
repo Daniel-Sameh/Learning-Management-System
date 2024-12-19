@@ -40,11 +40,13 @@ public class PostController {
                 return ResponseEntity.status(404).body("Course not found");
             }
             Post post = postService.createPost(title, content, courseId, file);
+            System.out.println("Created the post....");
             courseService.notify(
                     "New Announcement: \"" + course.getName() + "\"",
                     "Title: " + title + "<br>Content: " + content,
                     course
             );
+            System.out.println("Notified the students....");
 
             return ResponseEntity.ok("Post created successfully with ID: " + post.getId());
             

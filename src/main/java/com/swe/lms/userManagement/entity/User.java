@@ -40,7 +40,13 @@ public class User implements UserDetails {
     private Role role;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "users")
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "user_notifications",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "notification_id")
+    )
     private Set<Notification> notifications = new HashSet<>();
 
     @JsonIgnore

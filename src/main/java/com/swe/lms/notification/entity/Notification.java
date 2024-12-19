@@ -1,5 +1,6 @@
 package com.swe.lms.notification.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.swe.lms.userManagement.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,12 +36,13 @@ public class Notification {
     @Column(nullable = false)
     private boolean read = false;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_notifications",
-            joinColumns = @JoinColumn(name = "notification_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @JsonIgnore
+    @EqualsAndHashCode.Exclude
+    @ManyToMany(mappedBy = "notifications", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
+    public void addUser(User user) {
+        users.add(user);
+        user.getNotifications().add(this);
+    }
 
 }

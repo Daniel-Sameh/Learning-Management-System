@@ -4,6 +4,7 @@ import com.swe.lms.courseManagement.dto.CourseDTO;
 import com.swe.lms.courseManagement.dto.StudentDTO;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
+import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +27,9 @@ public class CourseService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public void enrollUserInCourse(Long courseId, Long userId) {
         Course course = courseRepository.findById(courseId)
@@ -129,5 +134,12 @@ public class CourseService {
         }
 
         return false;  // Student was not enrolled in this course
+    }
+    public void notify(String subject, String body, Course course){
+        List<User> students = course.getStudents();
+        notificationService.sendNotification(students, subject, body);
+    }
+    public Optional<Course> findById(Long courseId) {
+        return courseRepository.findById(courseId);
     }
 }
