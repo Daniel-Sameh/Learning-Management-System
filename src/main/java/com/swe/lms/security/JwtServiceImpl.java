@@ -50,8 +50,8 @@ public class JwtServiceImpl implements JwtService{
 //                .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
 //    }
     private Key getSignKey() {
-        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
-//        byte[] keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
+//        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes = SECRET.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

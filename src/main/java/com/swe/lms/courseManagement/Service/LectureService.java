@@ -1,8 +1,10 @@
 package com.swe.lms.courseManagement.Service;
 
+import com.swe.lms.courseManagement.Repository.CourseRepository;
 import com.swe.lms.courseManagement.Repository.LectureRepository;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.entity.Lecture;
+import com.swe.lms.exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -10,6 +12,9 @@ import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
@@ -18,6 +23,9 @@ public class LectureService {
     private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
     @Autowired
     private LectureRepository lectureRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
 
     public String startLecture(Long lectureId) {
 
@@ -59,10 +67,10 @@ public class LectureService {
         }
 
         User user = userRepository.findByUsername(username)
-             .orElseThrow(() -> new IllegalArgumentException("User not found"));
+             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         // Verify lecture
         Lecture lecture = lectureRepository.findById(lectureId)
-                .orElseThrow(() -> new IllegalArgumentException("Lecture not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Lecture not found"));
 
         if (!lecture.isRunning()) {
             return "Lecture is not currently running";
@@ -114,4 +122,41 @@ public class LectureService {
 //            return "User is already marked as attended";
 //        }
 //    }
+    public String createLecture(Map<String, Object> request, String token){
+        String username;
+        String role;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            username = claims.getSubject();
+            role = (String) claims.get("role");
+            System.out.println("The role is: " + role);
+        } catch (Exception e) {
+            System.out.println("There is an error in the token");
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+        if (!role.equals("INSTRUCTOR")) {
+            throw new IllegalArgumentException("Only instructors can create lectures");
+        }
+        Lecture lecture = new Lecture();
+        for (Map.Entry<String, Object> entry : request.entrySet()) {
+            System.out.println(entry.getKey() + ":" + entry.getValue());
+        }
+        Course course = courseRepository.findById(Long.valueOf(request.get("courseId").toString()))
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        lecture.setCourse((Course) course);
+
+        String dateStr = (String) request.get("date");
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+        LocalDateTime dateTime = LocalDateTime.parse(dateStr, formatter);
+        lecture.setDate(dateTime);
+
+        System.out.println("I set the course and date of the lecture");
+        lecture.setName((String) request.get("name"));
+
+        lecture.setRunning(false);
+
+        System.out.println("I set all the attributes of the lecture");
+        lectureRepository.save(lecture);
+        return "Created lecture "+ request.get("name") +" with id " + lecture.getId() + " for the " + course.getName() + " course.";
+    }
 }

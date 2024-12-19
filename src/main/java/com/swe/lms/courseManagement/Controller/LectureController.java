@@ -15,17 +15,30 @@ public class LectureController {
     @Autowired
     private LectureService lectureService;
 
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
+    @PostMapping("/create")
+    public ResponseEntity<String> createLecture(@RequestBody Map<String, Object> request, @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        System.out.println("The token: " + token);
+        String createdLecture = lectureService.createLecture(request, token);
+        System.out.println("The response string: " + createdLecture);
+        return ResponseEntity.ok(createdLecture);
+    }
+
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     @PostMapping("/{lectureId}/start")
     public ResponseEntity<String> startLecture(@PathVariable Long lectureId) {
         String startedLecture = lectureService.startLecture(lectureId);
         return ResponseEntity.ok(startedLecture);
     }
 
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     @PostMapping("/{lectureId}/end")
     public ResponseEntity<String> endLecture(@PathVariable Long lectureId) {
        String lecture= lectureService.endLecture(lectureId);
         return ResponseEntity.ok(lecture);
     }
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @PostMapping("/{lectureId}/attend")
     public ResponseEntity<String> attendLecture(@PathVariable Long lectureId,@RequestHeader("Authorization")String authorizationHeader,@RequestBody Map<String, Object> request) {
 
@@ -35,6 +48,12 @@ public class LectureController {
         String otp = (String) request.get("otp");
         String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
         String attendanceResponse = lectureService.attend(lectureId, token,otp);
+        if (attendanceResponse.equals("Invalid OTP")
+                || attendanceResponse.equals("Lecture is not currently running")
+                || attendanceResponse.equals("User is not enrolled in the course for this lecture")
+                || attendanceResponse.equals("User has already attended the lecture")) {
+            return ResponseEntity.badRequest().body(attendanceResponse);
+        }
         return ResponseEntity.ok(attendanceResponse);
     }
 

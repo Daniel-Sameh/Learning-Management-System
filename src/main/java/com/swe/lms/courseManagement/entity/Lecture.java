@@ -6,19 +6,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Getter
 @Setter
-//@AllArgsConstructor
-//@NoArgsConstructor
-
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name="Lectures")
 public class Lecture {
     @Id
     @GeneratedValue(strategy = jakarta.persistence.GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name="name", nullable = false)
+    private String name;
 
     @OneToMany
     private List<User> attendanceList;
@@ -33,7 +36,8 @@ public class Lecture {
     @JoinColumn(name = "course_id")
     private Course course;
 
-
+    @Column(name = "date")
+    private LocalDateTime date;
 
 //    public Long getId() {
 //        return id;
