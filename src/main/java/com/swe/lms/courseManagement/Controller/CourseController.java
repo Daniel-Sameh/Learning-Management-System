@@ -36,7 +36,7 @@ public class CourseController {
         return ResponseEntity.ok("User enrolled successfully in the course");
     }
 
-    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<CourseDTO> createCourse(@RequestBody Map<String, Object> courseRequest, @RequestHeader("Authorization")String authorizationHeader) {
 
@@ -44,8 +44,6 @@ public class CourseController {
             throw new IllegalArgumentException("Authorization header is missing or invalid");
         }
         String token = authorizationHeader.substring(7);
-
-
 
         CourseDTO  createdCourse = courseService.createCourse(courseRequest,token);
         return ResponseEntity.ok(createdCourse);
