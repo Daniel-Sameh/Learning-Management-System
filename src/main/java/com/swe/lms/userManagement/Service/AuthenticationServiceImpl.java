@@ -71,6 +71,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = User.builder().username(request.getUsername())
                 .email(request.getEmail()).password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER).build();
+        if (!userRepository.findByUsername(request.getUsername()).isEmpty()){
+            throw new IllegalArgumentException("Username is already in use");
+        }
         userRepository.save(user);
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
