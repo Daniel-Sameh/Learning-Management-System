@@ -1,5 +1,6 @@
 package com.swe.lms.courseManagement.Service;
 
+import com.cloudinary.Cloudinary;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.entity.Post;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
@@ -14,6 +15,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -25,55 +28,69 @@ public class PostService {
     @Autowired
     private CourseRepository courseRepository;
 
-    // Method to create a post with optional media file upload
     public Post createPost(String title, String content, Long courseId, MultipartFile file) throws IOException {
-        // Check if the course exists
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Course not found"));
 
         // Create a new post
         Post post = new Post();
         post.setTitle(title);
-        post.setContent(content); // You can store the content (text) directly
-        post.setLectureDate(LocalDateTime.now()); // Set the current date
+        post.setContent(content);  
+        post.setLectureDate(LocalDateTime.now());  
 
         if (file != null && !file.isEmpty()) {
-            // Process the file (upload to the server)
             String mediaPath = saveMediaFile(file);
             post.setMedia(mediaPath);
         }
 
-        // Set the course for this post
+ 
         post.setCourse(course);
 
-        // Save the post to the database
+      
         return postRepository.save(post);
     }
 
-    // Helper method to save the uploaded media file and return its path
+   
     private String saveMediaFile(MultipartFile file) throws IOException {
-        // Get the application's root directory (current working directory)
-        String baseDir = System.getProperty("user.dir");
+        Map<String, String> config = new HashMap<>();
+        config.put("cloud_name", "dpvaasmox");
+        config.put("api_key", "194844265729344");
+        config.put("api_secret", "FOBe4DlLK6FnNqgXMOeTRJVevLE");
+        Cloudinary cloudinary = new Cloudinary(config);
 
-        // Define the relative upload directory (e.g., inside a "uploads" folder)
-        String uploadDir = baseDir + "/uploads/";
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-
-        // Get the original file name
+        int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);
         String originalFileName = file.getOriginalFilename();
 
-        // Generate a random number and append it to the file name to ensure uniqueness
-        int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999); // Random 6-digit number
-        String fileName = randomNum + "_" + originalFileName;  // Randomized file name
-        Path filePath = Paths.get(uploadDir + fileName);
+        String fileNameWithRandom = randomNum + "_" + originalFileName.substring(0, originalFileName.lastIndexOf("."));
 
-        // Save the file to the directory
-        Files.write(filePath, file.getBytes());
+        Map<String, Object> uploadParams = new HashMap<>();
+        uploadParams.put("folder", "uploads");
+        uploadParams.put("public_id", fileNameWithRandom);
 
-        // Return the path to be stored in the database
-        return filePath.toString();
+        String contentType = file.getContentType();
+        if (contentType != null && contentType.startsWith("image/")) {
+            uploadParams.put("resource_type", "image");
+        } else if (contentType != null && contentType.startsWith("video/")) {
+            uploadParams.put("resource_type", "video");
+        } else if (contentType != null && contentType.startsWith("application/")) {
+            uploadParams.put("resource_type", "raw");
+        } else {
+            throw new RuntimeException("Unsupported file type: " + contentType);
+        }
+
+        File tempFile = File.createTempFile("temp", originalFileName.substring(originalFileName.lastIndexOf(".")));
+        file.transferTo(tempFile);
+
+        Map uploadResult;
+        try {
+            uploadResult = cloudinary.uploader().upload(tempFile, uploadParams);
+        } catch (Exception e) {
+            throw new RuntimeException("Error uploading file to Cloudinary: " + e.getMessage(), e);
+        } finally {
+            tempFile.delete();
+        }
+
+        return (String) uploadResult.get("url");
     }
+
 }
