@@ -36,7 +36,7 @@ public class CourseController {
         return ResponseEntity.ok("User enrolled successfully in the course");
     }
 
-    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+   @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<CourseDTO> createCourse(@RequestBody Map<String, Object> courseRequest, @RequestHeader("Authorization")String authorizationHeader) {
 
@@ -50,22 +50,14 @@ public class CourseController {
     }
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
     @PutMapping("/{courseId}/update")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long courseId, @RequestBody Map<String, Object> updatedCourseRequest) {
-        String name = (String) updatedCourseRequest.get("name");
-        String code = (String) updatedCourseRequest.get("code");
-        Long instructorId = Long.valueOf(updatedCourseRequest.get("instructor").toString());
+    public ResponseEntity<CourseDTO> updateCourse(@PathVariable Long courseId, @RequestBody Map<String, Object> updatedCourseRequest, @RequestHeader("Authorization")String authorizationHeader) {
 
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header is missing or invalid");
+        }
+        String token = authorizationHeader.substring(7);
 
-        User instructor = userRepository.findById(instructorId)
-                .orElseThrow(() -> new ResourceNotFoundException("Instructor not found"));
-
-
-        Course updatedCourse = new Course();
-        updatedCourse.setName(name);
-        updatedCourse.setCode(code);
-        updatedCourse.setInstructor(instructor);
-
-        Course updated = courseService.updateCourse(courseId, updatedCourse);
+        CourseDTO updated = courseService.updateCourse(courseId, updatedCourseRequest,token);
         return ResponseEntity.ok(updated);
     }
     @GetMapping("/view")
@@ -83,9 +75,11 @@ public class CourseController {
         return ResponseEntity.ok(students);
     }
 
+   @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     @DeleteMapping("/{courseId}/remove/{studentId}")
-    public ResponseEntity<String> removestudent(@PathVariable Long courseId, @PathVariable Long studentId) {
-        boolean isRemoved = courseService.removeStudentFromCourse(courseId, studentId);
+    public ResponseEntity<String> removestudent(@PathVariable Long courseId, @PathVariable Long studentId,@RequestHeader("Authorization")String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        boolean isRemoved = courseService.removeStudentFromCourse(courseId, studentId,token);
         if (isRemoved) {
             return ResponseEntity.ok("Student removed from course successfully");
         } else {
