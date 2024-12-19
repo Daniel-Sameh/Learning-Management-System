@@ -51,29 +51,39 @@ public class PostService {
     }
 
     // Helper method to save the uploaded media file and return its path
-    private String saveMediaFile(MultipartFile file) throws IOException {
-        // Get the application's root directory (current working directory)
-        String baseDir = System.getProperty("user.dir");
+        private String saveMediaFile(MultipartFile file) throws IOException {
+        // Configure Cloudinary
+        Map<String, String> config = new HashMap<>();
+        config.put("cloud_name", "dpvaasmox");  // Replace with your Cloudinary cloud name
+        config.put("api_key", "194844265729344");       // Replace with your Cloudinary API key
+        config.put("api_secret", "FOBe4DlLK6FnNqgXMOeTRJVevLE"); // Replace with your Cloudinary API secret
+        Cloudinary cloudinary = new Cloudinary(config);
 
-        // Define the relative upload directory (e.g., inside a "uploads" folder)
-        String uploadDir = baseDir + "/uploads/";
-        File directory = new File(uploadDir);
-        if (!directory.exists()) {
-            directory.mkdirs();
+        // Generate a random number to ensure uniqueness
+        int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);
+
+        // Extract original file name and append random number
+        String originalFileName = file.getOriginalFilename();
+        String fileNameWithRandom = randomNum + "_" + originalFileName;
+
+        // Prepare Cloudinary upload parameters
+        Map<String, Object> uploadParams = new HashMap<>();
+        uploadParams.put("folder", "uploads");
+        uploadParams.put("public_id", fileNameWithRandom); // Set the file name in Cloudinary
+
+        // Create a temporary file for uploading
+        File tempFile = File.createTempFile("temp", file.getOriginalFilename());
+        file.transferTo(tempFile);
+
+        // Upload to Cloudinary
+        Map uploadResult;
+        try {
+            uploadResult = cloudinary.uploader().upload(tempFile, uploadParams);
+        } finally {
+            tempFile.delete();
         }
 
-        // Get the original file name
-        String originalFileName = file.getOriginalFilename();
-
-        // Generate a random number and append it to the file name to ensure uniqueness
-        int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999); // Random 6-digit number
-        String fileName = randomNum + "_" + originalFileName;  // Randomized file name
-        Path filePath = Paths.get(uploadDir + fileName);
-
-        // Save the file to the directory
-        Files.write(filePath, file.getBytes());
-
-        // Return the path to be stored in the database
-        return filePath.toString();
+        // Return the Cloudinary URL for the uploaded file
+        return (String) uploadResult.get("url");
     }
 }
