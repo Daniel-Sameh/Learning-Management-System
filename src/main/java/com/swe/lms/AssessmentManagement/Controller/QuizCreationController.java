@@ -33,15 +33,15 @@ public class QuizCreationController {
 //    }
 //
 //
-    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
-    @PostMapping("/create-manual")
-    public Quiz createQuizByAddingQuestions(@AuthenticationPrincipal User instructor,@RequestBody ManualQuizRequest manualQuizRequest ,@RequestParam Long courseId) {
-        if (instructor.getRole() != Role.INSTRUCTOR) {
-            throw new RuntimeException("Only instructors can create quizzes.");
-        }
-        Optional<Course> course = courseService.findById(courseId);
-        return quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(), manualQuizRequest.getTimelimit(),manualQuizRequest.getQuestions(),course);
-    }
+            //    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
+            //    @PostMapping("/create-manual")
+            //    public Quiz createQuizByAddingQuestions(@AuthenticationPrincipal User instructor,@RequestBody ManualQuizRequest manualQuizRequest ,@RequestParam Long courseId) {
+            //        if (instructor.getRole() != Role.INSTRUCTOR) {
+            //            throw new RuntimeException("Only instructors can create quizzes.");
+            //        }
+            //        Optional<Course> course = courseService.findById(courseId);
+            //        return quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(), manualQuizRequest.getTimelimit(),manualQuizRequest.getQuestions(),course);
+            //    }
 
 
 }
