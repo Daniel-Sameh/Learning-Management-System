@@ -18,6 +18,8 @@ public class MCQQuestionFactory implements IQuestionFactory{
         MCQQuestion question=new MCQQuestion();
         question.setCourse(courseRepository.findById(courseid).get());
         question.setQuestionText(questionText);
+        System.out.println("The options from inside the factory are:");
+        System.out.println((List<String>) params[0]);
         question.setOptions((List<String>) params[0]);
         question.setCorrectOptionIndex((int) params[1]);
         question.setScore((float) params[2]);

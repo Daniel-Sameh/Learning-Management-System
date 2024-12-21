@@ -24,6 +24,7 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private Map<String, IQuestionFactory> questionFactories;
     private final CourseRepository courseRepository;
+
     @PostConstruct
     public void init() {
         questionFactories = new HashMap<>();
@@ -44,6 +45,8 @@ public class QuestionService {
 
         if (factory != null) {
             if ("MCQ".equals(questionType)) {
+                System.out.println("Options from inside the service are:");
+                System.out.println(request.getOptions());
                 Question question = factory.createQuestion(
                         request.getQuestionText(),
                         request.getCourseid(),

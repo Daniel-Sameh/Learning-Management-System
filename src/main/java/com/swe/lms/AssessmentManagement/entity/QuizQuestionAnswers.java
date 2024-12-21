@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="QuizAnswers")
-public class QuizQuestionAnswers {//for each question
+public class QuizQuestionAnswers {//quiz result
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;

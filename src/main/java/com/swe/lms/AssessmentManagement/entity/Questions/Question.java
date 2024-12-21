@@ -34,6 +34,6 @@ public abstract class Question {
     @JoinColumn(name = "quiz_id")
     private Quiz quizId;
 
-    abstract boolean  validateAnswer(Object answer);
+    public abstract boolean  validateAnswer(Object answer);
 
 }

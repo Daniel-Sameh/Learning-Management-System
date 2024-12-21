@@ -33,7 +33,7 @@ public class QuizCreationController {
         }
         Long courseId = quizRequest.getCourseId();
         Optional<Course> course = courseService.findById(courseId);
-        quizService.createQuizFromBank(instructor, quizRequest.getTitle(),quizRequest.getNumQuestions(), quizRequest.getTimeLimit(), course);
+        quizService.createQuizFromBank(instructor, quizRequest.getTitle(),quizRequest.getNumQuestions(),quizRequest.getStartTime(), quizRequest.getTimeLimit(), course);
         return ResponseEntity.ok("Question bank quiz Created");
 
     }
@@ -43,16 +43,20 @@ public class QuizCreationController {
     @PostMapping("/create/manual")
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     public ResponseEntity<?> createQuizByAddingQuestions(@AuthenticationPrincipal User instructor, @RequestBody ManualQuizRequest manualQuizRequest) {
+        System.out.println("I am in the begining of the createQuizByAddingQuestions");
         if (instructor.getRole() != Role.INSTRUCTOR) {
             throw new RuntimeException("Only instructors can create quizzes.");
         }
+        System.out.println("I am in the middle of the createQuizByAddingQuestions");
 //        Optional<Course> course = courseService.findById(courseId);
         Long courseId = manualQuizRequest.getCourseid();
         Optional<Course> course = courseService.findById(courseId);
         if (!course.isPresent()) {
+            System.out.println("ALLLLLOOOOOOOOOOOO");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course not found");
         }
-        quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getQuestionsNum(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
+        System.out.println("start time"+ manualQuizRequest.getStartTime());
+        quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getQuestionsNum(),manualQuizRequest.getStartTime(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
         return ResponseEntity.ok("Quiz Created");
     }
 

@@ -24,4 +24,5 @@ public class QuizResult {
 
     @Lob//field for large object in the database
     private String feedback;
+
 }

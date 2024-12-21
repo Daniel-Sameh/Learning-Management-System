@@ -26,6 +26,9 @@ public class QuestionBankController {
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     public ResponseEntity<?> createBank(@AuthenticationPrincipal User instructor, @RequestBody QuestionBankRequest questionBankRequest) {
         Optional<Course> course=courseRepository.findById(questionBankRequest.getCourseid());
+        if (course.isEmpty()) { // not sure
+            return ResponseEntity.status(404).body("Course not found");
+        }
         questionBankService.createBankTOCourse(questionBankRequest.getQuestions(),course.get());
         return ResponseEntity.ok("Question bank Created");
 

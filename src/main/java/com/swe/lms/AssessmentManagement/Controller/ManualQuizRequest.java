@@ -5,6 +5,7 @@ import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 import com.swe.lms.courseManagement.entity.Course;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 @Setter
 @Getter
@@ -18,5 +19,7 @@ public class ManualQuizRequest {
     private Integer timeLimit;
     private Integer questionsNum;
     private long courseid;
+    private String startTime;
+
 
 }

@@ -10,13 +10,17 @@ import com.swe.lms.AssessmentManagement.entity.Quiz;
 import com.swe.lms.AssessmentManagement.entity.QuizQuestionAnswers;
 import com.swe.lms.AssessmentManagement.entity.QuizResult;
 import com.swe.lms.AssessmentManagement.entity.QuizSubmission;
+import com.swe.lms.exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,8 +38,14 @@ public class QuizSubmissionService {
     @Transactional
     public QuizSubmission submitQuiz(Long quizId, User student, List<QuizAnswerRequest> answerRequests){
         Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new RuntimeException("Quiz not found"));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+        LocalDateTime current = LocalDateTime.now();
+        LocalDateTime start = quiz.getStartTime();
+        if (current.isBefore(start)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz has not started yet.");
+        }else if (current.isAfter(start.plusMinutes(quiz.getTimeLimit()))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quiz has ended.");
+        }
         QuizSubmission quizSubmission=new QuizSubmission();
         quizSubmission.setQuiz(quiz);
         quizSubmission.setStudent(student);
@@ -49,26 +59,27 @@ public class QuizSubmissionService {
         for(QuizAnswerRequest answer: answerRequests){
 
             Question question = questionRepository.findById(answer.getQuestionId())
-                    .orElseThrow(() -> new RuntimeException("Question not found"));
-            correct = false;
-            if(question instanceof MCQQuestion){
-                MCQQuestion mcq=(MCQQuestion) question;
-                correct= mcq.validateAnswer(answer.getAnswer());
-
-            }
-            else if( question instanceof ShortAnswerQuestion){
-                ShortAnswerQuestion shortAnswerQuestion=(ShortAnswerQuestion) question;
-                correct=shortAnswerQuestion.validateAnswer(answer.getAnswer());
-
-            }
-            else if( question instanceof TrueFalseQuestion){
-                TrueFalseQuestion tfQuestion = (TrueFalseQuestion) question;
-                correct=tfQuestion.validateAnswer(answer.getAnswer());
-
-            }
-            else {
-                throw new IllegalArgumentException("Unknown question type: " + question.getClass());
-            }
+                    .orElseThrow(() -> new ResourceNotFoundException("Question not found"));
+//            correct = false;
+            correct = question.validateAnswer(answer.getAnswer());
+//            if(question instanceof MCQQuestion){
+//                MCQQuestion mcq=(MCQQuestion) question;
+//                correct= mcq.validateAnswer(answer.getAnswer());
+//
+//            }
+//            else if( question instanceof ShortAnswerQuestion){
+//                ShortAnswerQuestion shortAnswerQuestion=(ShortAnswerQuestion) question;
+//                correct=shortAnswerQuestion.validateAnswer(answer.getAnswer());
+//
+//            }
+//            else if( question instanceof TrueFalseQuestion){
+//                TrueFalseQuestion tfQuestion = (TrueFalseQuestion) question;
+//                correct=tfQuestion.validateAnswer(answer.getAnswer());
+//
+//            }
+//            else {
+//                throw new IllegalArgumentException("Unknown question type: " + question.getClass());
+//            }
 
             if(correct){
                 student_score+=question.getScore();
@@ -76,6 +87,7 @@ public class QuizSubmissionService {
             System.out.println("Question: " + question.getQuestionText());
             System.out.println("Submitted Answer: " + answer.getAnswer());
             System.out.println("Correct Answer: " + correct);
+
             QuizQuestionAnswers quizQuestionAnswers=new QuizQuestionAnswers();
 
             quizQuestionAnswers.setAnswer(answer.getAnswer());
@@ -95,6 +107,7 @@ public class QuizSubmissionService {
         quizResult.setStudent(student);
         quizResult.setQuiz(quiz);
         quizResult.setScore(student_score);
+
         if(student_score==0){
             quizResult.setFeedback("failed");
         }else {

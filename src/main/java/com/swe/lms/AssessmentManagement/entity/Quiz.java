@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,9 @@ public class Quiz {
 
     @Column(name="title", nullable = false)
     private String title;
+
+    @Column(name = "start_time", nullable = false, columnDefinition = "TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime startTime;
 
     @Column(nullable = false)
     private Integer timeLimit;

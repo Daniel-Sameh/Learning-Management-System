@@ -1,6 +1,8 @@
 package com.swe.lms.courseManagement.entity;
 
 
+import com.swe.lms.AssessmentManagement.entity.QuestionBank;
+import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 import com.swe.lms.userManagement.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 @Entity
 @Getter
@@ -43,7 +46,10 @@ public class Course {
     @OneToMany(mappedBy = "course")
     private List<Post> posts;
 
+    @OneToOne(mappedBy = "course", cascade = CascadeType.ALL)
+    private QuestionBank questionBank;
 
-
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Question> questions = new ArrayList<>();
 
 }
