@@ -11,8 +11,8 @@ public class LmsApplication {
 		Dotenv dotenv = Dotenv.load();
 		System.setProperty("EMAIL_USERNAME", dotenv.get("EMAIL_USERNAME"));
 		System.setProperty("EMAIL_PASSWORD", dotenv.get("EMAIL_PASSWORD"));
-		System.out.println("EMAIL_USERNAME: " + System.getProperty("EMAIL_USERNAME"));
-		System.out.println("EMAIL_PASSWORD: " + System.getProperty("EMAIL_PASSWORD"));
+//		System.out.println("EMAIL_USERNAME: " + System.getProperty("EMAIL_USERNAME"));
+//		System.out.println("EMAIL_PASSWORD: " + System.getProperty("EMAIL_PASSWORD"));
 		SpringApplication.run(LmsApplication.class, args);
 	}
 

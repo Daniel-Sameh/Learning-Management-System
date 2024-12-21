@@ -1,9 +1,13 @@
 package com.swe.lms.courseManagement.Service;
 
+import com.swe.lms.courseManagement.Repository.LectureRepository;
+import com.swe.lms.courseManagement.Repository.PostRepository;
 import com.swe.lms.courseManagement.dto.CourseDTO;
 import com.swe.lms.courseManagement.dto.StudentDTO;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
+import com.swe.lms.courseManagement.entity.Lecture;
+import com.swe.lms.courseManagement.entity.Post;
 import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
@@ -27,6 +31,12 @@ public class CourseService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private LectureRepository lectureRepository;
 
     @Autowired
     private NotificationService notificationService;
@@ -181,4 +191,41 @@ public class CourseService {
     public Optional<Course> findById(Long courseId) {
         return courseRepository.findById(courseId);
     }
+    public boolean isEnrolled(User user, Course course) {
+        return course.getStudents().contains(user);
+    }
+    public void deleteCourse(String token,Long courseId) {
+        String username;
+        String role;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            username = claims.getSubject();
+            role = (String) claims.get("role");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+        Course course=courseRepository.findById(courseId)
+                .orElseThrow(()-> new RuntimeException("Course not found"));
+        if (!"admin".equalsIgnoreCase(role) && !course.getInstructor().getUsername().equals(username)) {
+            throw new RuntimeException("Unauthorized: Only the course instructor can delete this course");
+        }
+        List<Post> posts = postRepository.findByCourseId(courseId);
+        postRepository.deleteAll(posts);
+        List<Lecture> lectures = lectureRepository.findByCourseId(courseId);
+        lectureRepository.deleteAll(lectures);
+        courseRepository.delete(course);
+
+    }
+
+
+    public Optional<Course> getCourseById(Long courseId) {
+        return courseRepository.findById(courseId);
+    }
+
+    public List<User> getStudentsByCourseId(Long courseId) {
+        return courseRepository.findById(courseId)
+                .map(Course::getStudents)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+    }
+
 }

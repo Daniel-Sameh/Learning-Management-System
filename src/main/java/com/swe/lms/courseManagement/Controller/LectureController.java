@@ -57,6 +57,13 @@ public class LectureController {
         return ResponseEntity.ok(attendanceResponse);
     }
 
+
+
+
+
+
+
+
 //@PostMapping("/attend")
 //public ResponseEntity<String> attendLecture(@RequestBody Map<String, Object> request) {
 //    Long lectureId = Long.valueOf(request.get("lectureId").toString());

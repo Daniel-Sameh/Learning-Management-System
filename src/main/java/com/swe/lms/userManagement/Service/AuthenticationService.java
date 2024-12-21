@@ -19,4 +19,5 @@ public interface AuthenticationService {
     User getUserByUsername(String username);
 
      User updateprofile(Map<String, Object>payload, String token,Long userid);
+//     List<User>getStudentsByCourseId( Long courseId);
 }

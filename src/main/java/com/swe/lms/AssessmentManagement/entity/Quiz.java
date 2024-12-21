@@ -45,6 +45,9 @@ public class Quiz {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+    @Column(name = "fullmark", nullable = false, columnDefinition = "FLOAT NOT NULL DEFAULT 0")
+    private Float fullmark;
+
     public void addQuestion(Question question) {
         questions.add(question);
     }

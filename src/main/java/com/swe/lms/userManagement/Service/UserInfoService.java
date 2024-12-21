@@ -1,6 +1,9 @@
 package com.swe.lms.userManagement.Service;
 
+import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,7 +29,17 @@ public class UserInfoService implements UserService {
             }
         };
     }
+    private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
 
+    public Optional<User> getUserFromToken(String token) {
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            String username = claims.getSubject();
+            return userRepository.findByUsername(username);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+    }
 
 
 //    public UserDto CreateUser(UserDto userDto){

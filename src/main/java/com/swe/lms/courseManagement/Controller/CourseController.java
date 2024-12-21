@@ -75,7 +75,7 @@ public class CourseController {
         return ResponseEntity.ok(students);
     }
 
-   @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     @DeleteMapping("/{courseId}/remove/{studentId}")
     public ResponseEntity<String> removestudent(@PathVariable Long courseId, @PathVariable Long studentId,@RequestHeader("Authorization")String authorizationHeader) {
         String token = authorizationHeader.substring(7);
@@ -86,4 +86,19 @@ public class CourseController {
             return ResponseEntity.status(404).body("Course or Student not found");
         }
     }
+
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/{courseId}/delete")
+    public ResponseEntity<String> deletecourse(@PathVariable Long courseId,@RequestHeader("Authorization")String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header is missing or invalid");
+        }
+        String token = authorizationHeader.substring(7);
+
+        courseService.deleteCourse(token,courseId);
+
+        return ResponseEntity.ok("Course deleted successfully");
+
+    }
 }
+

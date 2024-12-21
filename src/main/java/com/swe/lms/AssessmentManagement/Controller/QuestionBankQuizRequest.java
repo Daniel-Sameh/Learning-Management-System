@@ -14,7 +14,7 @@ public class QuestionBankQuizRequest {
     private Integer numQuestions;
     private Integer timeLimit;
     private long courseId;
-    private LocalDateTime startTime;
+    private String startTime;
 
 
 }

@@ -5,6 +5,8 @@ import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.courseManagement.entity.Post;
 import com.swe.lms.courseManagement.Repository.CourseRepository;
 import com.swe.lms.courseManagement.Repository.PostRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,12 +18,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class PostService {
-
+    private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
     @Autowired
     private PostRepository postRepository;
 
@@ -93,4 +97,40 @@ public class PostService {
         return (String) uploadResult.get("url");
     }
 
+    public Optional<Post> getPostById(Long id) {
+        return postRepository.findById(id);
+    }
+
+    public void deletePost(Long id) {
+        postRepository.deleteById(id);
+    }
+    public List<Post> getAllPostsByCourseId(Long courseId) {
+        return postRepository.findByCourseId(courseId);
+    }
+    public Post updatepost(Map<String, Object> request,Long postId,String token){
+        String username;
+        try {
+            Claims claims = Jwts.parser().setSigningKey(SECRET_KEY.getBytes()).parseClaimsJws(token).getBody();
+            username = claims.getSubject();
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token", e);
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        Course course=courseRepository.findById(post.getId())
+                .orElseThrow(()-> new RuntimeException("Course not found"));
+
+        if (!course.getInstructor().getUsername().equals(username)) {
+            throw new RuntimeException("Unauthorized: Only the course instructor can modify this post");
+        }
+        if (request.containsKey("title")) {
+            post.setTitle((String) request.get("title"));
+        }
+
+        if (request.containsKey("content")) {
+            post.setContent((String) request.get("content"));
+        }
+        return postRepository.save(post);
+    }
 }

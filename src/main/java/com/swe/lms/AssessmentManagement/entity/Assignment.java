@@ -3,15 +3,18 @@ package com.swe.lms.AssessmentManagement.entity;
 import com.swe.lms.courseManagement.entity.Course;
 import com.swe.lms.userManagement.entity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
+@Data
 @Table(name="Assignments")
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
+@Getter
 public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,7 +27,7 @@ public class Assignment {
     private String description;
 
     @Column(name="deadline" ,nullable=false)
-    private LocalDate date;
+    private LocalDateTime deadline;
 
     @ManyToOne
     @JoinColumn(name="course_id", nullable = false)

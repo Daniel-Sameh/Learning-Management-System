@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -90,8 +91,12 @@ public class LectureService {
 
         return "User with ID " + user.getId() + " successfully attended the lecture with ID " + lectureId;
     }
+    public List<Lecture>  getLecturesByCourseId(Long courseId){
 
-//    private UserRepository userRepository;
+     List<Lecture> lecs=  lectureRepository.findByCourseId(courseId);
+     return lecs;
+    }
+    //    private UserRepository userRepository;
 //
 //    public String attendLecture(Long lectureId, String otp, Long userId) {
 //

@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -21,8 +23,11 @@ public class AssignmentSubmission {
     @JoinColumn(name="student_id", nullable=false)
     private User student;
 
+    @Column(name = "media", nullable = true)
+    private String media;
+
     @Column(name="submission time")
-    private LocalDate submissionTime;
+    private LocalDateTime submissionTime;
 
     @ManyToOne
     @JoinColumn(name = "assignment_id", nullable=false)
@@ -30,4 +35,7 @@ public class AssignmentSubmission {
 
     @Column(name="status")//graded aw submitted bas
     private String status;
+
+    @Column(name="grade", nullable = true)
+    private float grade;
 }

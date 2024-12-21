@@ -1,5 +1,6 @@
 package com.swe.lms.userManagement.controller;
 
+import com.swe.lms.userManagement.repository.UserRepository;
 import com.swe.lms.courseManagement.dto.CourseDTO;
 import com.swe.lms.notification.entity.Notification;
 import com.swe.lms.notification.service.NotificationService;
@@ -14,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
+import com.swe.lms.userManagement.Service.UserInfoService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,25 @@ public class UserController {
         response.put("name", updated.getUsername());
         response.put("email", updated.getEmail());
         response.put("role", updated.getRole());
+        return ResponseEntity.ok(response);
+    }
+    UserInfoService userInfoService;
+    @GetMapping("/profile")
+    public ResponseEntity<Map<String, Object>> viewUserProfile(@RequestHeader("Authorization") String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            throw new IllegalArgumentException("Authorization header is missing or invalid");
+        }
+
+        String token = authorizationHeader.substring(7);
+
+        User user = userInfoService.getUserFromToken(token)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("username", user.getUsername());
+        response.put("email", user.getEmail());
+        response.put("role", user.getRole());
+
         return ResponseEntity.ok(response);
     }
 //    @PostMapping("/register")

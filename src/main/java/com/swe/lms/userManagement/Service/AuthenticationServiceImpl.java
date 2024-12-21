@@ -164,4 +164,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         userRepository.save(user);
         return user;
     }
+//    public List<User>getStudentsByCourseId( Long courseId){
+//        List<User> user=userRepository.findByCourse_Id(courseId);
+//        return user;
+//    }
 }

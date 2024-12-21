@@ -41,13 +41,13 @@ public class QuestionBankService {
         });
 
         questionBank.addQuestion(question);
-        questionRepository.save(question); // Persist the question in the repository
+        questionRepository.save(question);
     }
 
     public List<Question> getQuestions(long courseId) {
         Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(courseId);
         if (bankOpt.isPresent()) {
-            return bankOpt.get().getQuestions(); // Get the questions from the bank if present
+            return bankOpt.get().getQuestions();
         } else {
             throw new RuntimeException("Question bank not found for the given course ID");
         }
@@ -59,20 +59,11 @@ public class QuestionBankService {
         }
 
         long questionBankCourseId=questionBankcourse.getId();
-//        for(QuestionRequest questionRequest:questionRequests){
-//            if(questionBankCourseId!=questionRequest.getCourseid()){
-//                throw new IllegalArgumentException("question "+questionRequest.getQuestionText()+" doesn't relate to this course");
-//            }
-//        }
-//        Optional<Course> qBankCourse = Optional.of(courseRepository.findById(questionBankCourseId)
-//                .orElseThrow(() -> new RuntimeException("Course with ID " + questionBankCourseId + " not found")));
-//
 
 
         // Check if the question bank already exists
         Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(questionBankCourseId);
 
-        // If the bank does not exist, create a new one
         QuestionBank questionBank = bankOpt.orElseGet(() -> {
             QuestionBank newBank = new QuestionBank();
             newBank.setCourse(questionBankcourse);

@@ -36,8 +36,9 @@ public class QuizSubmission {
 
     @OneToMany(mappedBy = "quizSubmission", cascade = CascadeType.ALL)
     private List<QuizQuestionAnswers> answers=new ArrayList<>();
-//    @Lob//field for large object in the database
-//    private String feedback;
+
+    @Column(name="feedback")
+    private String feedback;
 //
 
 }
