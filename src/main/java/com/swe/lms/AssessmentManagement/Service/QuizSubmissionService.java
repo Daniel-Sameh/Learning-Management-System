@@ -16,11 +16,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.swing.text.html.Option;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 //import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -121,5 +125,26 @@ public class QuizSubmissionService {
 
         quizSubmissionRepository.save(quizSubmission);//updated not saved twice
         return quizSubmission;
+    }
+
+    public List<Map<String, Object>> getQuizSubmissions(Long quizId){
+        Optional<List<QuizSubmission>> quizSubmissions=quizSubmissionRepository.findAllByQuiz_Id(quizId);
+        if (quizSubmissions.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No submissions found for this quiz.");
+        }
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+        List<Map<String, Object>> ret = quizSubmissions.get().stream().map(submission -> {
+            Map<String, Object> result = new HashMap<>();
+            result.put("username", submission.getStudent().getUsername());
+            result.put("score", submission.getScore());
+            return result;
+        }).collect(Collectors.toList());
+        int size = quizSubmissions.get().size();
+        float total = quizSubmissions.get().stream().map(QuizSubmission::getScore).reduce(0f, Float::sum);
+        ret.add(Map.of("average", total / size));
+        ret.add(Map.of("fullmark", quiz.getFullmark()));
+
+        return ret;
     }
 }

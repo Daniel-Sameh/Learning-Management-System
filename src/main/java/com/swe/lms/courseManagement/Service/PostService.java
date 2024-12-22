@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import io.github.cdimascio.dotenv.Dotenv;
 
 @Service
 public class PostService {
-    private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
+    static Dotenv dotenv = Dotenv.load();
+
+    private static final String SECRET_KEY = dotenv.get("SECRET_KEY");
     @Autowired
     private PostRepository postRepository;
 
@@ -57,9 +60,9 @@ public class PostService {
    
     private String saveMediaFile(MultipartFile file) throws IOException {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", "dpvaasmox");
-        config.put("api_key", "194844265729344");
-        config.put("api_secret", "FOBe4DlLK6FnNqgXMOeTRJVevLE");
+        config.put("cloud_name",dotenv.get("CLOUD_NAME") );
+        config.put("api_key", dotenv.get("CLOUD_KEY"));
+        config.put("api_secret", dotenv.get("CLOUD_SECRET"));
         Cloudinary cloudinary = new Cloudinary(config);
 
         int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);

@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +74,7 @@ public class ReportController {
             // Get statistics first
             List<List<AssignmentSubmission>> assignments = assignmentService.getSubmissionsByCourseId(courseId);
             List<Lecture> lectures = lectureService.getLecturesByCourseId(courseId);
+            List<Map<String,Object>> attendanceStats = new ArrayList<>();
             List<User> students = courseService.getStudentsByCourseId(courseId);
             Map<String, Object> stats = reportService.generatePerformanceStats(assignments, lectures, students);
             if (stats == null) {

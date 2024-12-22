@@ -14,11 +14,13 @@ import com.swe.lms.userManagement.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.swe.lms.userManagement.entity.Role;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -90,10 +92,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 //        System.out.println("____________________________________:::::");
 //        System.out.println(request.getUsername());
 //        System.out.println("____________________________________:::::");
+        var user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid UserName or Password."));
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
-        var user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid UserName or Password."));
         var jwt = jwtService.generateToken(user);
         return JwtAuthenticationResponse.builder().token(jwt).build();
     }
@@ -119,7 +121,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User getUserByUsername(String username) {
-        return userRepository.findByUsername(username).orElseThrow(() -> new ResourceNotFoundException("User not found."));
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid UserName or Password."));
     }
 
     public User updateprofile(Map<String, Object>payload, String token,Long userid){

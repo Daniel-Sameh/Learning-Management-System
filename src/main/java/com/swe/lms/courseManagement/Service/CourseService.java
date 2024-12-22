@@ -12,6 +12,7 @@ import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.userManagement.Exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
 import com.swe.lms.userManagement.repository.UserRepository;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
-    private static final String SECRET_KEY = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
+    static Dotenv dotenv = Dotenv.load();
+
+    private static final String SECRET_KEY = dotenv.get("SECRET_KEY");
 
     @Autowired
     private CourseRepository courseRepository;

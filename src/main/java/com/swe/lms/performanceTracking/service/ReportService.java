@@ -96,7 +96,7 @@ public class ReportService {
                     Cell gradeCell = row.createCell(4);
                     gradeCell.setCellValue(submission.getGrade());
 
-                    // Status
+                    // Status (Problem is HERE!!!!)
                     row.createCell(5).setCellValue(submission.getStatus() != null ?
                             submission.getStatus() : "Not Submitted");
 
@@ -432,10 +432,14 @@ public class ReportService {
         return assignments.stream()
                 .collect(Collectors.groupingBy(submission -> {
                     float grade = submission.getGrade();
-                    if (grade >= 90) return "A (90-100)";
-                    else if (grade >= 80) return "B (80-89)";
-                    else if (grade >= 70) return "C (70-79)";
-                    else if (grade >= 60) return "D (60-69)";
+                    if (grade >= 95) return "A+ (95-100)";
+                    else if (grade >= 90) return "A (90-94)";
+                    else if (grade >= 85) return "B+ (85-89)";
+                    else if (grade >= 80) return "B (80-84)";
+                    else if (grade >= 75) return "C+ (75-79)";
+                    else if (grade >= 70) return "C (70-74)";
+                    else if (grade >= 65) return "D+ (65-69)";
+                    else if (grade >= 60) return "D (60-64)";
                     else return "F (Below 60)";
                 }, Collectors.counting()));
     }

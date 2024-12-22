@@ -45,6 +45,8 @@ public class UserController {
         JwtAuthenticationResponse response = authenticationService.signin(request);
         for (Notification notification : notifications){
             System.out.println("Notification: " + notification.getTitle());
+            notification.setRead(true);
+            notificationService.saveNotification(notification);
         }
         Map<String, Object> finalResponse = new HashMap<>();
         finalResponse.put("token", response.getToken());

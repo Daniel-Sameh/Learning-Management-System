@@ -75,6 +75,9 @@ public class NotificationService {
     }
 
     public List<Notification> getNotificationsByUser(User user) {
-        return notificationRepository.findByUsers_Id(user.getId());
+        return notificationRepository.findByUsers_IdAndReadIsFalse(user.getId());
+    }
+    public void saveNotification(Notification notification) {
+        notificationRepository.save(notification);
     }
 }

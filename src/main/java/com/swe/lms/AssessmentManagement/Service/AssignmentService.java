@@ -1,6 +1,7 @@
 package com.swe.lms.AssessmentManagement.Service;
 
 import com.cloudinary.Cloudinary;
+import io.github.cdimascio.dotenv.Dotenv;
 import com.swe.lms.AssessmentManagement.Repository.AssignmentRepository;
 import com.swe.lms.AssessmentManagement.Repository.AssignmentSubmissionRepository;
 import com.swe.lms.AssessmentManagement.entity.Assignment;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AssignmentService {
+    static Dotenv dotenv = Dotenv.load();
     @Autowired
     private final AssignmentRepository assignmentRepository;
 
@@ -85,9 +87,9 @@ public class AssignmentService {
 
     private String saveMediaFile(MultipartFile file) throws IOException {
         Map<String, String> config = new HashMap<>();
-        config.put("cloud_name", "dpvaasmox");
-        config.put("api_key", "194844265729344");
-        config.put("api_secret", "FOBe4DlLK6FnNqgXMOeTRJVevLE");
+        config.put("cloud_name",dotenv.get("CLOUD_NAME") );
+        config.put("api_key", dotenv.get("CLOUD_KEY"));
+        config.put("api_secret", dotenv.get("CLOUD_SECRET"));
         Cloudinary cloudinary = new Cloudinary(config);
 
         int randomNum = ThreadLocalRandom.current().nextInt(100000, 999999);
