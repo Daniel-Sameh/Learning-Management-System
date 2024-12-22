@@ -19,4 +19,8 @@ public class ShortAnswerQuestion extends Question {
     public boolean validateAnswer(Object answer) {
         return getCorrectAnswer().equalsIgnoreCase((String) answer);
     }
+    @Override
+    public String getCorrectAnswer() {
+        return this.correctAnswer;
+    }
 }
