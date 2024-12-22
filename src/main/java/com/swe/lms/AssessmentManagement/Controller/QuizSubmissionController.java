@@ -1,6 +1,9 @@
 package com.swe.lms.AssessmentManagement.Controller;
 
+import com.swe.lms.AssessmentManagement.Mapper.QuizSubmissionMapper;
+import com.swe.lms.AssessmentManagement.Repository.QuizSubmissionRepository;
 import com.swe.lms.AssessmentManagement.Service.QuizSubmissionService;
+import com.swe.lms.AssessmentManagement.dto.QuizSubmissionDto;
 import com.swe.lms.AssessmentManagement.entity.Quiz;
 import com.swe.lms.AssessmentManagement.entity.QuizSubmission;
 import com.swe.lms.userManagement.entity.User;
@@ -14,7 +17,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @AllArgsConstructor
@@ -26,6 +32,9 @@ public class QuizSubmissionController {
 
     @Autowired
     private final QuizSubmissionService quizSubmissionService;
+    private final QuizSubmissionRepository quizSubmissionRepository;
+    @Autowired
+    private final QuizSubmissionMapper quizSubmissionMapper;
 
 
     @PostMapping("/{quizId}")
@@ -42,6 +51,20 @@ public class QuizSubmissionController {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error submitting quiz");
         }
+    }
+    @GetMapping ("/{studentId}")
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    public ResponseEntity<?> getSubmissions(@PathVariable long studentId){
+        List<QuizSubmission> submissions= quizSubmissionRepository.findByStudentId(studentId);
+        if(submissions.isEmpty()){
+            return ResponseEntity.status(404).body("No quizzes submitted by this student");
+        }
+        List<QuizSubmissionDto> submissionDtos=new ArrayList<>();
+        for (QuizSubmission quizSubmission : submissions) {
+            submissionDtos.add(quizSubmissionMapper.toDTO(quizSubmission));
+        }
+
+        return ResponseEntity.ok(submissionDtos);
     }
 
 }

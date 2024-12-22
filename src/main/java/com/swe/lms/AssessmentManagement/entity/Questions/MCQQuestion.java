@@ -32,4 +32,8 @@ public class MCQQuestion extends Question {
             return false;
         }
     }
+    @Override
+    public String getCorrectAnswer() {
+        return this.correctOptionIndex.toString();
+    }
 }

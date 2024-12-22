@@ -22,5 +22,9 @@ public class TrueFalseQuestion extends Question {
         }
         throw new IllegalArgumentException("Invalid answer type for True/False question: " + answer.getClass());
     }
+        @Override
+    public String getCorrectAnswer() {
+        return this.correctAnswer.toString();
+    }
 }
 

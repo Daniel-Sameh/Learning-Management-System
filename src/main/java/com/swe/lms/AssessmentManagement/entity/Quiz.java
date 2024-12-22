@@ -45,15 +45,26 @@ public class Quiz {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
+      //newly added
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+            name = "quiz_student",
+            joinColumns = @JoinColumn(name = "quiz_id"),
+            inverseJoinColumns = @JoinColumn(name = "student_id"))
+    private List<User> students=new ArrayList<>();
+    
     @Column(name = "fullmark", nullable = false, columnDefinition = "FLOAT NOT NULL DEFAULT 0")
     private Float fullmark;
-
+    
     public void addQuestion(Question question) {
         questions.add(question);
     }
 
     public void removeQuestion(Question question) {
         questions.remove(question);
+    }
+    public void addStudents(List<User> studentsToAdd) {
+        this.students.addAll(studentsToAdd);
     }
 }
 
