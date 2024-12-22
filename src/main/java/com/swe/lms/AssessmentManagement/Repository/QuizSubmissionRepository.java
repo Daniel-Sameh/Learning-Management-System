@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface QuizSubmissionRepository extends JpaRepository<QuizSubmission, Long> {
     Optional<QuizSubmission> findByQuizAndStudent(Quiz quiz, User student);
+    List<QuizSubmission> findByStudentId(long studentId);
+
 }
