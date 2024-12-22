@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,18 +31,28 @@ public class QuestionBankService {
 
 
 
-    public void addQuestion(Question question) {
-        Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(question.getCourse().getId());
-
+    public void addQuestion(Course course,QuestionRequest questionRequest) {
+        Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(course.getId());
         QuestionBank questionBank = bankOpt.orElseGet(() -> {
             QuestionBank newBank = new QuestionBank();
-            newBank.setCourse(question.getCourse()); // set the course for the new bank
-            newBank.setQuestionsNumber(0); // initialize the question count to 0
-            return questionBankRepository.save(newBank); // save and return the new bank
+            newBank.setCourse(course);
+            newBank.setQuestionsNumber(0);
+            return questionBankRepository.save(newBank);
         });
-
+        Question question=questionCreation.createQuestion(questionRequest);
+        if (question == null) {
+            throw new IllegalArgumentException("Invalid question type provided.");
+        }
         questionBank.addQuestion(question);
         questionRepository.save(question);
+    }
+    public void deleteQuestion(Course course,Question question) {
+        Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(course.getId());
+        if(bankOpt.isEmpty()){
+            throw new RuntimeException("No bank for this course to delete a question from it.");
+        }
+        bankOpt.get().removeQuestion(question);
+        questionRepository.delete(question);
     }
 
     public List<Question> getQuestions(long courseId) {
@@ -60,8 +71,6 @@ public class QuestionBankService {
 
         long questionBankCourseId=questionBankcourse.getId();
 
-
-        // Check if the question bank already exists
         Optional<QuestionBank> bankOpt = questionBankRepository.findByCourseId(questionBankCourseId);
 
         QuestionBank questionBank = bankOpt.orElseGet(() -> {
@@ -71,15 +80,14 @@ public class QuestionBankService {
             return questionBankRepository.save(newBank);
         });
 
-        // Add each question to the bank
         for (QuestionRequest request : questionRequests) {
             Optional<Question> existingQuestion = questionRepository.findByQuestionText(request.getQuestionText());
             if (existingQuestion.isPresent()) {
                 throw new RuntimeException("Question with this text already exists.");
             }else{
-                Question question = questionCreation.createQuestion(request); // Question is already saved in the DB
+                Question question = questionCreation.createQuestion(request);
 
-                questionBank.addQuestion(question);  // Adding the question to the bank
+                questionBank.addQuestion(question);
             }
 
         }
