@@ -1,9 +1,14 @@
 package com.swe.lms.AssessmentManagement.Service;
+import com.swe.lms.AssessmentManagement.Mapper.QuizMapper;
 import com.swe.lms.AssessmentManagement.Repository.QuestionRepository;
 import com.swe.lms.AssessmentManagement.Repository.QuizRepository;
+import com.swe.lms.AssessmentManagement.dto.QuizDto;
 import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 import com.swe.lms.AssessmentManagement.entity.Quiz;
+import com.swe.lms.courseManagement.Repository.CourseRepository;
+import com.swe.lms.courseManagement.Service.CourseService;
 import com.swe.lms.courseManagement.entity.Course;
+import com.swe.lms.notification.service.NotificationService;
 import com.swe.lms.userManagement.entity.Role;
 import com.swe.lms.userManagement.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +33,13 @@ public class QuizService {
     private final QuestionService questionCreation;
     @Autowired
     private final QuestionRepository questionRepository;
+
+    @Autowired
+    private final CourseRepository courseRepository;
+    @Autowired
+    private final QuizMapper quizMapper;
+    @Autowired
+    private final NotificationService notificationService;
 
     public Quiz createQuizFromBank(User instructor, String title, Integer questionsNum,String startTime,Integer timeLimit, Optional<Course> course) {
         if (instructor.getRole() != Role.INSTRUCTOR) {
@@ -60,6 +72,16 @@ public class QuizService {
             totalScore+=q.getScore();
 
         }
+        //get enrolled students in this course add them to quiz students list
+        List<User> students = courseEntity.getStudents();
+        if (students == null || students.isEmpty()) {
+            throw new RuntimeException("No students enrolled in the course.");
+        }
+        System.out.println("beforeaddingg");
+
+        quiz.addStudents(students);
+        System.out.println("afteraddingg");
+        //heere notify them
         quiz.setFullmark(totalScore);
         quizRepository.save(quiz);
 
@@ -85,28 +107,27 @@ public class QuizService {
 
         quiz.setCourse(course.get());
         System.out.println("course"+ course);
-        try {
-            quizRepository.save(quiz);
-            System.out.println("Quiz saved successfully.");
-        } catch (Exception e) {
-            System.out.println("Error saving quiz: " + e.getMessage());
-            e.printStackTrace();
-        }
+//        try {
+//            quizRepository.save(quiz);
+//            System.out.println("Quiz saved successfully.");
+//        } catch (Exception e) {
+//            System.out.println("Error saving quiz: " + e.getMessage());
+//            e.printStackTrace();
+//        }
         float totalScore=0;
 
         for (QuestionRequest request : questionRequests) {
-//            System.out.println("Creating question: " + request.getQuestionText());
-//            System.out.println("Course id: " + request.getCourseid());
-//            System.out.println("Question type: " + request.getQuestionType());
-//            if (request.getQuestionType().equals("MCQ")){
-//                System.out.println("options: "+ request.getOptions());
-//                System.out.println("correct option index: "+ request.getCorrectOptionIndex());
-//            }else if (request.getQuestionType().equals("TRUE_FALSE")){
-//                System.out.println("correct answer: "+ request.getCorrectAnswer());
-//            }else if (request.getQuestionType().equals("SHORT_ANSWER")){
-//                System.out.println("correct answer: "+ request.getCorrectAnswer());
-//            }
-//            System.out.println("-------------------------------------------------");
+            System.out.println("Creating question: " + request.getQuestionText());
+            System.out.println("Course id: " + request.getCourseid());
+            System.out.println("Question type: " + request.getQuestionType());
+            if (request.getQuestionType().equals("MCQ")){
+                System.out.println("options: "+ request.getOptions());
+                System.out.println("correct option index: "+ request.getCorrectOptionIndex());
+            }else if (request.getQuestionType().equals("TRUE_FALSE")){
+                System.out.println("correct answer: "+ request.getCorrectAnswer());
+            }else if (request.getQuestionType().equals("SHORT_ANSWER")){
+                System.out.println("correct answer: "+ request.getCorrectAnswer());
+            }
             Optional<Question> existingQuestion = questionRepository.findByQuestionText(request.getQuestionText());
             if (existingQuestion.isPresent()) {
                 quiz.addQuestion(existingQuestion.get());
@@ -117,10 +138,52 @@ public class QuizService {
                 totalScore+=question.getScore();
             }
         }
+        List<User> students = course.get().getStudents();
+        if (students == null || students.isEmpty()) {
+            throw new RuntimeException("No students enrolled in the course.");
+        }
+        quiz.addStudents(students);
+        System.out.println("-------------------------------------------------");
         quiz.setFullmark(totalScore);
+        System.out.println("-------------------------------------------------");
         quizRepository.save(quiz);
         return quiz;
     }
+
+    public Quiz updateQuiz(Quiz quiz,String title, Integer questionsNum, String startTime,Integer timeLimit, Optional<Course> course){
+        System.out.println("--------------inside update-------");
+        quiz.setTitle(title);
+        quiz.setCourse(course.get());
+        quiz.setQuestionsNumber(questionsNum);
+        quiz.setTimeLimit(timeLimit);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        LocalDateTime dateTime = LocalDateTime.parse(startTime, formatter);
+
+        quiz.setStartTime(dateTime);
+        quizRepository.save(quiz);
+        return  quiz;
+    }
+
+    public List<QuizDto> getQuizzesByStudentId(long studentId){
+        List<Course> courses=courseRepository.findByStudentsId(studentId);;
+        if(courses.isEmpty()){
+            throw new RuntimeException("Student is not enrolled in any courses.");
+        }
+        List<QuizDto> quizDtos=new ArrayList<>();
+        for(Course course: courses){
+            List<Quiz> quizzes=quizRepository.findQuizzesByCourseId(course.getId());
+            for (Quiz quiz : quizzes) {
+                quizDtos.add(quizMapper.toDTO(quiz));
+            }
+
+
+        }
+        return quizDtos;
+    }
+//    public void notify(String subject, String body, Quiz quiz){
+//        List<User> students = quiz.getStudents();
+//        notificationService.sendNotification(students, subject, body);
+//    }
 
 
 }
