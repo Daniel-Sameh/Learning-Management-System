@@ -35,5 +35,6 @@ public abstract class Question {
     private Quiz quizId;
 
     public abstract boolean  validateAnswer(Object answer);
+    public abstract String getCorrectAnswer();
 
 }
