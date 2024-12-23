@@ -37,6 +37,7 @@ public class QuizController {
 
 
 
+
     @PostMapping("/create/bank")
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     public ResponseEntity<?> createQuizFromBank(@AuthenticationPrincipal User instructor, @RequestBody QuestionBankQuizRequest quizRequest) {
@@ -80,7 +81,7 @@ public class QuizController {
                 return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
             }
         }
-        Quiz quiz=quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getQuestionsNum(),manualQuizRequest.getStartTime(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
+        Quiz quiz=quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getStartTime(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
         quizService.notify(
                 "New Announcement: \"" + course.get().getName() + "\"",
                 "Title: New Quiz "+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" minutes till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
@@ -115,7 +116,7 @@ public class QuizController {
         }
         List<QuizDto> quizDtos=new ArrayList<>();
         for (Quiz quiz : quizzes) {
-            quizDtos.add(quizMapper.toDTO(quiz));
+            quizDtos.add(QuizMapper.toDTO(quiz));
         }
         return ResponseEntity.ok(quizDtos);
 
@@ -130,7 +131,7 @@ public class QuizController {
         }
         List<QuizDto> quizDtos=new ArrayList<>();
         for (Quiz quiz : quizzes) {
-            quizDtos.add(quizMapper.toDTO(quiz));
+            quizDtos.add(QuizMapper.toDTO(quiz));
         }
         return ResponseEntity.ok(quizDtos);
     }
@@ -184,7 +185,7 @@ public class QuizController {
                 return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
             }
         }
-        quiz= quizService.updateQuiz(quiz,updateRequest.getTitle(),updateRequest.getQuestionsNum(), updateRequest.getStartTime(), updateRequest.getTimeLimit(), course);
+        quiz= quizService.updateQuiz(quiz,updateRequest.getTitle(), updateRequest.getStartTime(), updateRequest.getTimeLimit(), course);
         quizService.notify(
                 "New Announcement: \"" + course.get().getName() + "\"",
                 "Title: The quiz"+quiz.getTitle() +" was updated. " + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" minutes till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
