@@ -162,5 +162,9 @@ public class AssignmentService {
                 .collect(Collectors.toList());
         return submissions;
     }
+    public void notify(String subject, String body, Assignment assignment){
+        List<User> students=assignment.getCourse().getStudents();
+        notificationService.sendNotification(students, subject, body);
+    }
 
 }
