@@ -65,7 +65,13 @@ public class QuizService {
             throw new RuntimeException("Not enough questions in the question bank.");
         }
         Collections.shuffle(allQuestions);
-        quiz.setQuestions(allQuestions.subList(0, questionsNum));
+        
+        List<Question> questionsToSave=allQuestions.subList(0, questionsNum);
+        for(Question question: questionsToSave){
+            question.getQuizzes().add(quiz);
+            quiz.addQuestion(question);
+        }
+        
         float totalScore=0;
         for(Question q: quiz.getQuestions()){
             System.out.println("Question: "+q.getQuestionText());
@@ -79,10 +85,8 @@ public class QuizService {
         }
 
         quiz.addStudents(students);
-        //heere notify them
         quiz.setFullmark(totalScore);
         quizRepository.save(quiz);
-
         return quiz;
     }
 
@@ -128,10 +132,12 @@ public class QuizService {
             }
             Optional<Question> existingQuestion = questionRepository.findByQuestionText(request.getQuestionText());
             if (existingQuestion.isPresent()) {
+                existingQuestion.get().getQuizzes().add(quiz);
                 quiz.addQuestion(existingQuestion.get());
                 totalScore+=existingQuestion.get().getScore();
             }else{
                 Question question= questionCreation.createQuestion(request);
+                question.getQuizzes().add(quiz);
                 quiz.addQuestion(question);
                 totalScore+=question.getScore();
             }
