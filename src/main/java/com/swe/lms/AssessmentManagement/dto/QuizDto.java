@@ -22,4 +22,6 @@ public class QuizDto {
     private long courseId;
     private long instructorId;
     private List<QuestionDto> questions;
+    private Integer questionsNum;
+
 }
