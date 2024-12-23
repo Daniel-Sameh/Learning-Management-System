@@ -19,7 +19,7 @@ public class QuestionMapper {
         dto.setCourseName(question.getCourse().getName());
         dto.setScore(question.getScore());
         dto.setQuestionText(question.getQuestionText());
-        dto.setCorrectAnswer(question.getCorrectAnswer());
+        // dto.setCorrectAnswer(question.getCorrectAnswer());
         dto.setId(question.getId());
         return dto;
     }
