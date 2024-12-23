@@ -33,7 +33,6 @@ public class QuizService {
     private final QuestionService questionCreation;
     @Autowired
     private final QuestionRepository questionRepository;
-
     @Autowired
     private final CourseRepository courseRepository;
     @Autowired
@@ -65,19 +64,19 @@ public class QuizService {
             throw new RuntimeException("Not enough questions in the question bank.");
         }
         Collections.shuffle(allQuestions);
-        
         List<Question> questionsToSave=allQuestions.subList(0, questionsNum);
+
         for(Question question: questionsToSave){
             question.getQuizzes().add(quiz);
             quiz.addQuestion(question);
         }
-        
+//        quiz.setQuestions(allQuestions.subList(0, questionsNum));
         float totalScore=0;
         for(Question q: quiz.getQuestions()){
             System.out.println("Question: "+q.getQuestionText());
             totalScore+=q.getScore();
-
         }
+
         //get enrolled students in this course add them to quiz students list
         List<User> students = courseEntity.getStudents();
         if (students == null || students.isEmpty()) {
@@ -87,16 +86,17 @@ public class QuizService {
         quiz.addStudents(students);
         quiz.setFullmark(totalScore);
         quizRepository.save(quiz);
+
         return quiz;
     }
 
-    public Quiz createQuizByAddingQuestions(User instructor, String title, Integer questionsNum, String startTime,Integer timeLimit, List<QuestionRequest> questionRequests, Optional<Course> course) {
+    public Quiz createQuizByAddingQuestions(User instructor, String title, String startTime,Integer timeLimit, List<QuestionRequest> questionRequests, Optional<Course> course) {
         if (instructor.getRole() != Role.INSTRUCTOR) {
             throw new RuntimeException("Only instructors can create quizzes.");
         }
         Quiz quiz = new Quiz();
         quiz.setTitle(title);
-        quiz.setQuestionsNumber(questionsNum);
+        quiz.setQuestionsNumber(0);
         quiz.setTimeLimit(timeLimit);
         quiz.setInstructor(instructor);
         try {
@@ -117,7 +117,7 @@ public class QuizService {
 //            e.printStackTrace();
 //        }
         float totalScore=0;
-
+        int numberOfQuestions=0;
         for (QuestionRequest request : questionRequests) {
             System.out.println("Creating question: " + request.getQuestionText());
             System.out.println("Course id: " + request.getCourseid());
@@ -135,13 +135,18 @@ public class QuizService {
                 existingQuestion.get().getQuizzes().add(quiz);
                 quiz.addQuestion(existingQuestion.get());
                 totalScore+=existingQuestion.get().getScore();
+                numberOfQuestions++;
             }else{
                 Question question= questionCreation.createQuestion(request);
+
                 question.getQuizzes().add(quiz);
                 quiz.addQuestion(question);
                 totalScore+=question.getScore();
+                numberOfQuestions++;
+
             }
         }
+        quiz.setQuestionsNumber(numberOfQuestions);
         List<User> students = course.get().getStudents();
         if (students == null || students.isEmpty()) {
             throw new RuntimeException("No students enrolled in the course.");
@@ -154,11 +159,10 @@ public class QuizService {
         return quiz;
     }
 
-    public Quiz updateQuiz(Quiz quiz,String title, Integer questionsNum, String startTime,Integer timeLimit, Optional<Course> course){
+    public Quiz updateQuiz(Quiz quiz,String title, String startTime,Integer timeLimit, Optional<Course> course){
         System.out.println("--------------inside update-------");
         quiz.setTitle(title);
         quiz.setCourse(course.get());
-        quiz.setQuestionsNumber(questionsNum);
         quiz.setTimeLimit(timeLimit);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
         LocalDateTime dateTime = LocalDateTime.parse(startTime, formatter);
@@ -177,7 +181,7 @@ public class QuizService {
         for(Course course: courses){
             List<Quiz> quizzes=quizRepository.findQuizzesByCourseId(course.getId());
             for (Quiz quiz : quizzes) {
-                quizDtos.add(quizMapper.toDTO(quiz));
+                quizDtos.add(QuizMapper.toDTO(quiz));
             }
 
 
@@ -193,8 +197,7 @@ public class QuizService {
         return quizDtos;
     }
 
-//    public void notify(String s, String s1, Quiz quiz) {
-//    }
+
     public void notify(String subject, String body, Quiz quiz){
         List<User> students = quiz.getStudents();
         notificationService.sendNotification(students, subject, body);
