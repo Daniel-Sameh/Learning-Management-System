@@ -299,7 +299,7 @@ class AssignmentControllerTest {
                 assertNotNull(responseBody);
                 assertTrue(responseBody.contains("error") || responseBody.contains("message"));
 
-                
+
                 System.out.println("Expected error caught:");
                 System.out.println("Status code: " + e.getStatusCode());
                 System.out.println("Response body: " + responseBody);
