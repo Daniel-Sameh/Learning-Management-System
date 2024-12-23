@@ -13,6 +13,8 @@ public class QuizMapper {
         dto.setStartTime(quiz.getStartTime());
         dto.setTitle(quiz.getTitle());
         dto.setId(quiz.getId());
+        dto.setQuestionsNum(quiz.getQuestionsNumber());
+
         List<QuestionDto> questionDTOs = quiz.getQuestions().stream()
                 .map(question -> {
                     QuestionDto questionDTO = new QuestionDto();
