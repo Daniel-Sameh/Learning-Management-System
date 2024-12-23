@@ -12,7 +12,7 @@ import lombok.*;
 public class QuizUpdateRequest {
 
     private String title;
-    private Integer questionsNum;
+    // private Integer questionsNum;
     private String startTime;
     private Integer timeLimit;
     private long courseId;
