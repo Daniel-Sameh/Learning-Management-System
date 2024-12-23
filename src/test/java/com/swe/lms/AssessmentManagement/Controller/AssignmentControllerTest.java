@@ -256,7 +256,7 @@ class AssignmentControllerTest {
             System.out.println("Instructor ID: " + instructor.getId());
             System.out.println("Instructor Token: " + instructorToken);
 
-            // Set invalid deadline format
+
             String invalidDeadline = "invalid-date-format";
 
             HttpHeaders headers = new HttpHeaders();
@@ -264,7 +264,7 @@ class AssignmentControllerTest {
 
             String baseUrlWithPath = baseUrl + "/create/course/" + course.getId();
 
-            // Create params with invalid deadline
+
             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("title", "Test Assignment");
             params.add("decription", "Test Description");
@@ -280,7 +280,7 @@ class AssignmentControllerTest {
 
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
 
-            // Make the request and expect an exception
+
             try {
                 restTemplate.exchange(
                         createUrl,
@@ -293,13 +293,13 @@ class AssignmentControllerTest {
                 fail("Expected exception was not thrown");
 
             } catch (HttpServerErrorException e) {
-                // Verify the error response
+
                 assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, e.getStatusCode());
                 String responseBody = e.getResponseBodyAsString();
                 assertNotNull(responseBody);
                 assertTrue(responseBody.contains("error") || responseBody.contains("message"));
 
-                // Log the error details
+                
                 System.out.println("Expected error caught:");
                 System.out.println("Status code: " + e.getStatusCode());
                 System.out.println("Response body: " + responseBody);
@@ -315,7 +315,6 @@ class AssignmentControllerTest {
     @Test
     void testCreateAssignment_CourseDoesNotExist() {
         try {
-            // Use a non-existent course ID
             Long nonExistentCourseId = 99999L;
 
             LocalDateTime deadline = LocalDateTime.now().plusDays(7);
