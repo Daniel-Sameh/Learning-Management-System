@@ -21,5 +21,5 @@ public class QuizDto {
     private LocalDateTime startTime;
     private long courseId;
     private long instructorId;
-    private List<Question> questions;
+    private List<QuestionDto> questions;
 }
