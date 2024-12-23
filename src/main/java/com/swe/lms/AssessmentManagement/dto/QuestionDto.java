@@ -17,5 +17,4 @@ public class QuestionDto {
     private float score;
     private long courseid;
     private String CourseName;
-    private String correctAnswer;
 }
