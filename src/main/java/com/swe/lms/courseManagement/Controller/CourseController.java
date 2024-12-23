@@ -10,6 +10,7 @@ import com.swe.lms.userManagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,10 +30,11 @@ public class CourseController {
         this.userRepository = userRepository;
     }
     @PreAuthorize("hasRole('ROLE_STUDENT')")
-    @PostMapping("/{courseId}/enroll/{userId}")
+    @PostMapping("/{courseId}/enroll")
     public ResponseEntity<String> enrollUserInCourse(
-            @PathVariable Long courseId,
-            @PathVariable Long userId) {
+            @AuthenticationPrincipal User user,
+            @PathVariable Long courseId) {
+        Long userId = user.getId();
         courseService.enrollUserInCourse(courseId, userId);
         return ResponseEntity.ok("User enrolled successfully in the course");
     }

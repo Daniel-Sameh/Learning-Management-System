@@ -148,7 +148,7 @@ class CourseControllerTest {
         System.out.println("Token: " + studentToken);
 
 
-        String enrollUrl = String.format("%s/%d/enroll/%d", baseUrl, course.getId(), student.getId());
+        String enrollUrl = String.format("%s/%d/enroll", baseUrl, course.getId());
         System.out.println("Enrollment URL: " + enrollUrl);
 
         HttpHeaders headers = new HttpHeaders();
