@@ -30,10 +30,13 @@ public abstract class Question {
     private Course course;
 
 
-    @ManyToOne
-    @JoinColumn(name = "quiz_id")
-    private Quiz quizId;
-
+    // @ManyToOne
+    // @JoinColumn(name = "quiz_id")
+    // private Quiz quizId;
+    
+    @ManyToMany(mappedBy = "questions") 
+    private List<Quiz> quizzes = new ArrayList<>();
+    
     public abstract boolean  validateAnswer(Object answer);
     public abstract String getCorrectAnswer();
 
