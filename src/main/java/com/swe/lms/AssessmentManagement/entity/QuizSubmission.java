@@ -1,6 +1,7 @@
 package com.swe.lms.AssessmentManagement.entity;
 
 import com.swe.lms.AssessmentManagement.Controller.QuizAnswerRequest;
+import com.swe.lms.AssessmentManagement.entity.Questions.Question;
 import com.swe.lms.userManagement.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,6 +40,10 @@ public class QuizSubmission {
 
     @Column(name="feedback")
     private String feedback;
-//
+
+//    public void addAnswer(QuizQuestionAnswers answer) {
+//        answers.add(answer);
+//    }
+
 
 }

@@ -74,7 +74,7 @@ public class AssignmentService {
             assignmentSubmission.setAssignment(assignment);
             assignmentSubmission.setMedia(url);
             assignmentSubmission.setStudent(student);
-            assignmentSubmission.setStatus("Submitted");
+            assignmentSubmission.setStatus("submitted");
             assignmentSubmission.setSubmissionTime(LocalDateTime.now());
             assignmentSubmissionRepository.save(assignmentSubmission);
         } catch (IOException e) {

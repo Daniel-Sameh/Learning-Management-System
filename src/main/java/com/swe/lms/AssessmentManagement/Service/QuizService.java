@@ -77,10 +77,8 @@ public class QuizService {
         if (students == null || students.isEmpty()) {
             throw new RuntimeException("No students enrolled in the course.");
         }
-        System.out.println("beforeaddingg");
 
         quiz.addStudents(students);
-        System.out.println("afteraddingg");
         //heere notify them
         quiz.setFullmark(totalScore);
         quizRepository.save(quiz);
@@ -180,10 +178,21 @@ public class QuizService {
         }
         return quizDtos;
     }
-//    public void notify(String subject, String body, Quiz quiz){
-//        List<User> students = quiz.getStudents();
-//        notificationService.sendNotification(students, subject, body);
+    public List<QuizDto> getQuizzesByCourseId(Long courseId){
+        List<Quiz> quizzes=quizRepository.findQuizzesByCourseId(courseId);
+        List<QuizDto> quizDtos=new ArrayList<>();
+        for (Quiz quiz : quizzes) {
+            quizDtos.add(quizMapper.toDTO(quiz));
+        }
+        return quizDtos;
+    }
+
+//    public void notify(String s, String s1, Quiz quiz) {
 //    }
+    public void notify(String subject, String body, Quiz quiz){
+        List<User> students = quiz.getStudents();
+        notificationService.sendNotification(students, subject, body);
+    }
 
 
 }

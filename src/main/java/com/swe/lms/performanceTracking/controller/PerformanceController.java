@@ -45,8 +45,8 @@ public class PerformanceController {
 
     @GetMapping("/quiz/{quizId}")
     @PreAuthorize("hasAnyRole('ROLE_INSTRUCTOR', 'ROLE_ADMIN')")
-    public ResponseEntity<List<Map<String, Object>>> getQuizPerformance(@PathVariable Long quizId) {
-        List<Map<String, Object>> quizSubmissions = quizSubmissionService.getQuizSubmissions(quizId);
+    public ResponseEntity<Map<String, Object>> getQuizPerformance(@PathVariable Long quizId) {
+        Map<String, Object> quizSubmissions = quizSubmissionService.getQuizSubmissions(quizId);
         return ResponseEntity.ok(quizSubmissions);
     }
 

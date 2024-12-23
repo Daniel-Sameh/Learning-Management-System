@@ -28,7 +28,7 @@ public class EmailNotificationService {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setFrom("20221050@stud.fci-cu.edu.eg"); // Set the sender explicitly
+//            helper.setFrom("20221050@stud.fci-cu.edu.eg"); // Set the sender explicitly
 
             helper.setTo(toEmail); // Set the recipient email
             helper.setSubject(subject); // Set the subject

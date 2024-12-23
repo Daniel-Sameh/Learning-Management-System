@@ -1,4 +1,5 @@
 package com.swe.lms.security;
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,8 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class JwtServiceImpl implements JwtService{
-    public static final String SECRET = "9D0EB6B1C2E1FAD0F53A248F6C3B5E4E2F6D8G3H1I0J7K4L1M9N2O3P5Q0R7S9T1U4V2W6X0Y3Z";
-//    @Value("${token.signing.key}")
+    static Dotenv dotenv = Dotenv.load();
+
+    private static final String SECRET = dotenv.get("SECRET_KEY");
 //    private String jwtSigningKey;
     @Override
     public String generateToken(UserDetails userDetails) {

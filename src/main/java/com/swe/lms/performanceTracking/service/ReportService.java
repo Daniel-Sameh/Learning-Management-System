@@ -1,38 +1,51 @@
 package com.swe.lms.performanceTracking.service;
 
+import com.swe.lms.AssessmentManagement.Repository.QuizRepository;
+import com.swe.lms.AssessmentManagement.dto.QuizDto;
 import com.swe.lms.AssessmentManagement.entity.Assignment;
 import com.swe.lms.AssessmentManagement.entity.AssignmentSubmission;
+import com.swe.lms.AssessmentManagement.entity.Quiz;
+import com.swe.lms.AssessmentManagement.entity.QuizSubmission;
 import com.swe.lms.courseManagement.dto.StudentDTO;
 import com.swe.lms.courseManagement.entity.Lecture;
+import com.swe.lms.exception.ResourceNotFoundException;
 import com.swe.lms.userManagement.entity.User;
+import lombok.AllArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Color;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.Color;
 import java.awt.Color.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class ReportService {
+    @Autowired
+    private  final QuizRepository quizRepository;
 
     public byte[] generatePerformanceReport(List<List<AssignmentSubmission>> assignments,
                                             List<Lecture> lectures,
@@ -325,14 +338,153 @@ public class ReportService {
         }
     }
 
-    public Map<String, Object> generatePerformanceStats(List<List<AssignmentSubmission>> assignmentsList,
-                                                        List<Lecture> lectures,
-                                                        List<User> students) {
+    public Map<String, Object> generatePerformanceStats(List<Map<String,Object>> courseStats) {
+
+        if (courseStats == null || courseStats.isEmpty()) {
+            throw new ResourceNotFoundException("Course stats is null or empty");
+        }
+
+        @SuppressWarnings("unchecked")
+        List<List<AssignmentSubmission>> assignmentsList = (List<List<AssignmentSubmission>>) courseStats.get(0).get("assignments");
+        @SuppressWarnings("unchecked")
+        List<Lecture> lectures = (List<Lecture>) courseStats.get(1).get("lectures");
+        @SuppressWarnings("unchecked")
+        List<User> students= (List<User>) courseStats.get(2).get("students");
+        @SuppressWarnings("unchecked")
+        List<QuizDto> quizzes= (List<QuizDto>) courseStats.get(3).get("quizzes");
+        @SuppressWarnings("unchecked")
+        List<Map<String,Object>> quizStats = (List<Map<String,Object>>) courseStats.get(4).get("quizStats");
+        ///////////////////////DEBUGGING:
+
+        // Debug courseStats itself
+        System.out.println("\n=== DEBUG: courseStats ===");
+        System.out.println("courseStats size: " + courseStats.size());
+//        for (int i = 0; i < courseStats.size(); i++) {
+//            System.out.println("Map " + i + ": " + courseStats.get(i));
+//            if (courseStats.get(i) != null) {
+//                System.out.println("Map " + i + " type: " + courseStats.get(i).getClass().getName());
+//                System.out.println("Map " + i + " keys: " + courseStats.get(i).keySet());
+//            } else {
+//                System.out.println("Map " + i + " is null");
+//            }
+//        }
+
+// Debug assignments
+        System.out.println("\n=== DEBUG: Assignments ===");
+        Object assignmentsObj = courseStats.get(0).get("assignments");
+        System.out.println("Assignments object type: " + (assignmentsObj != null ? assignmentsObj.getClass().getName() : "null"));
+        if (assignmentsList != null) {
+            System.out.println("AssignmentsList size: " + assignmentsList.size());
+            for (int i = 0; i < assignmentsList.size(); i++) {
+                List<AssignmentSubmission> submissions = assignmentsList.get(i);
+                System.out.println("\nSubmissions list " + i + " size: " + submissions.size());
+                for (AssignmentSubmission submission : submissions) {
+                    System.out.println("Submission: " + submission.getStatus());
+                    // Print specific fields of AssignmentSubmission
+                    // Adjust these based on your AssignmentSubmission class fields
+                    System.out.println("  - ID: " + submission.getId());
+                    // Add other relevant fields
+                }
+            }
+        } else {
+            System.out.println("AssignmentsList is null");
+        }
+
+// Debug lectures
+        System.out.println("\n=== DEBUG: Lectures ===");
+        Object lecturesObj = courseStats.get(1).get("lectures");
+        System.out.println("Lectures object type: " + (lecturesObj != null ? lecturesObj.getClass().getName() : "null"));
+        if (lectures != null) {
+            System.out.println("Lectures size: " + lectures.size());
+            for (Lecture lecture : lectures) {
+                System.out.println("Lecture: " + lecture.getName());
+                // Print specific fields of Lecture
+                System.out.println("  - ID: " + lecture.getId());
+                // Add other relevant fields
+            }
+        } else {
+            System.out.println("Lectures is null");
+        }
+
+// Debug students
+        System.out.println("\n=== DEBUG: Students ===");
+        Object studentsObj = courseStats.get(2).get("students");
+        System.out.println("Students object type: " + (studentsObj != null ? studentsObj.getClass().getName() : "null"));
+        if (students != null) {
+            System.out.println("Students size: " + students.size());
+            for (User student : students) {
+                System.out.println("Student: " + student.getUsername());
+                // Print specific fields of User
+                System.out.println("  - ID: " + student.getId());
+                System.out.println("  - Name: " + student.getUsername());
+                // Add other relevant fields
+            }
+        } else {
+            System.out.println("Students is null");
+        }
+
+// Debug quizzes
+        System.out.println("\n=== DEBUG: Quizzes ===");
+        Object quizzesObj = courseStats.get(3).get("quizzes");
+        System.out.println("Quizzes object type: " + (quizzesObj != null ? quizzesObj.getClass().getName() : "null"));
+        if (quizzes != null) {
+            System.out.println("Quizzes size: " + quizzes.size());
+            for (QuizDto quiz : quizzes) {
+                System.out.println("Quiz: " + quiz.getTitle());
+                // Print specific fields of QuizDto
+                System.out.println("  - ID: " + quiz.getId());
+                System.out.println("  - Title: " + quiz.getTitle());
+                // Add other relevant fields
+            }
+        } else {
+            System.out.println("Quizzes is null");
+        }
+
+// Debug quizStats
+        System.out.println("\n=== DEBUG: Quiz Stats ===");
+        Object quizStatsObj = courseStats.get(4).get("quizStats");
+        System.out.println("QuizStats object type: " + (quizStatsObj != null ? quizStatsObj.getClass().getName() : "null"));
+        if (quizStats != null) {
+            System.out.println("QuizStats size: " + quizStats.size());
+            for (int i = 0; i < quizStats.size(); i++) {
+                Map<String, Object> stat = quizStats.get(i);
+                System.out.println("\nQuiz Stat " + i + ":");
+                if (stat != null) {
+                    for (Map.Entry<String, Object> entry : stat.entrySet()) {
+                        System.out.println("  - " + entry.getKey() + ": " + entry.getValue());
+                        if (entry.getValue() != null) {
+                            System.out.println("    Type: " + entry.getValue().getClass().getName());
+                        }
+                    }
+                } else {
+                    System.out.println("  Stat is null");
+                }
+            }
+        } else {
+            System.out.println("QuizStats is null");
+        }
+
+        ////////////////////////END_OF_DEBUGGING
+
+//        Object item0 = courseStats.get(0);
+//        Object item1 = courseStats.get(1);
+//        Object item2 = courseStats.get(2);
+//        Object item3 = courseStats.get(3);
+//        Object item4 = courseStats.get(4);
+//
+//        List<List<AssignmentSubmission>> assignmentsList = item0 instanceof List ? (List<List<AssignmentSubmission>>) item0 : new ArrayList<>();
+//        List<Lecture> lectures = item1 instanceof List ? (List<Lecture>) item1 : new ArrayList<>();
+//        List<User> students = item2 instanceof List ? (List<User>) item2 : new ArrayList<>();
+//        List<QuizDto> quizzes = item3 instanceof List ? (List<QuizDto>) item3 : new ArrayList<>();
+//        List<Map<String,Object>> quizStats = item4 instanceof List ? (List<Map<String,Object>>) item4 : new ArrayList<>();
+
+        System.out.println("We are in generate performance stats...");
         // Calculate assignment statistics per assignment and overall
+
         List<Map<String, Object>> assignmentsStats = new ArrayList<>();
         double overallAverageGrade = 0.0;
         long totalSubmissions = 0;
-        long onTimeSubmissions = 0;
+//        long onTimeSubmissions = 0;
 
         for (List<AssignmentSubmission> assignments : assignmentsList) {
             if (!assignments.isEmpty()) {
@@ -359,12 +511,12 @@ public class ReportService {
                         .filter(a -> a.getStatus() != null && a.getStatus().equals("submitted"))
                         .count();
 
-                long onTimeCount = assignments.stream()
-                        .filter(submission ->
-                                submission.getSubmissionTime() != null &&
-                                        submission.getAssignment().getDeadline() != null &&
-                                        submission.getSubmissionTime().isBefore(submission.getAssignment().getDeadline()))
-                        .count();
+//                long onTimeCount = assignments.stream()
+//                        .filter(submission ->
+//                                submission.getSubmissionTime() != null &&
+//                                        submission.getAssignment().getDeadline() != null &&
+//                                        submission.getSubmissionTime().isBefore(submission.getAssignment().getDeadline()))
+//                        .count();
 
                 Map<String, Object> assignmentStat = new HashMap<>();
                 assignmentStat.put("assignmentId", assignment.getId());
@@ -375,8 +527,8 @@ public class ReportService {
                 assignmentStat.put("lowestGrade", lowestGrade);
                 assignmentStat.put("submissionRate",
                         Math.round(((double) submittedCount / students.size()) * 100.0) / 100.0);
-                assignmentStat.put("onTimeSubmissionRate",
-                        Math.round(((double) onTimeCount / students.size()) * 100.0) / 100.0);
+//                assignmentStat.put("onTimeSubmissionRate",
+//                        Math.round(((double) onTimeCount / students.size()) * 100.0) / 100.0);
                 assignmentStat.put("gradeDistribution", calculateGradeDistribution(assignments));
 
                 assignmentsStats.add(assignmentStat);
@@ -384,7 +536,7 @@ public class ReportService {
                 // Accumulate overall statistics
                 overallAverageGrade += avgGrade * assignments.size();
                 totalSubmissions += submittedCount;
-                onTimeSubmissions += onTimeCount;
+//                onTimeSubmissions += onTimeCount;
             }
         }
 
@@ -396,8 +548,8 @@ public class ReportService {
         double overallSubmissionRate = totalAssignments > 0 ?
                 (double) totalSubmissions / (students.size() * assignmentsList.size()) * 100 : 0.0;
 
-        double overallOnTimeRate = totalAssignments > 0 ?
-                (double) onTimeSubmissions / (students.size() * assignmentsList.size()) * 100 : 0.0;
+//        double overallOnTimeRate = totalAssignments > 0 ?
+//                (double) onTimeSubmissions / (students.size() * assignmentsList.size()) * 100 : 0.0;
 
         overallAverageGrade = totalAssignments > 0 ?
                 overallAverageGrade / totalAssignments : 0.0;
@@ -416,7 +568,7 @@ public class ReportService {
         // Overall grade and submission statistics
         stats.put("overallAverageGrade", Math.round(overallAverageGrade * 100.0) / 100.0);
         stats.put("overallSubmissionRate", Math.round(overallSubmissionRate * 100.0) / 100.0);
-        stats.put("overallOnTimeSubmissionRate", Math.round(overallOnTimeRate * 100.0) / 100.0);
+//        stats.put("overallOnTimeSubmissionRate", Math.round(overallOnTimeRate * 100.0) / 100.0);
 
         // Per-assignment statistics
         stats.put("assignmentsStats", assignmentsStats);
@@ -425,6 +577,111 @@ public class ReportService {
         stats.put("attendanceRate", Math.round(attendanceRate * 100.0) / 100.0);
         stats.put("averageAttendancePerLecture", calculateAverageAttendancePerLecture(lectures));
 
+        ///////////////////////////////////////////////////////////////////////////////////////////
+        System.out.println("before student statsss");
+        Map<String,Object> studentsStats = new HashMap<>();
+        for (User student : students) {
+            List<AssignmentSubmission> studentAssignments = assignmentsList.stream()
+                    .flatMap(List::stream)
+                    .filter(submission -> submission.getStudent().getId().equals(student.getId()))
+                    .collect(Collectors.toList());
+            System.out.println("after studentAssignments");
+
+            double grade = studentAssignments.stream()
+                    .mapToDouble(AssignmentSubmission::getGrade)
+                    .sum();
+            System.out.println("grade 1");
+
+            grade += lectures.stream()
+                    .filter(lecture -> lecture.getAttendanceList().contains(student))
+                    .count();
+            System.out.println("grade 2");
+
+            double quizzesScore = 0.0;
+            for (Map<String, Object> quizSubmissionMap : quizStats) {
+                System.out.println("We are in the quiz stats loooooooooppppppp.....");
+                System.out.println("THE QUIZ SUBMISSION MAP: "+quizSubmissionMap);
+
+                @SuppressWarnings("unchecked")
+                Map<String, Object> submissions = (Map<String, Object>) quizSubmissionMap.get("submissions");
+                System.out.println("THE SUBMISSIONS: "+submissions);
+                System.out.println("THE STUDENT: "+student.getUsername());
+                if (submissions != null) {
+                    Object score = submissions.get(student.getUsername());
+                    if (score != null) {
+                        try {
+                            // Handle different number types safely
+                            if (score instanceof Number) {
+                                quizzesScore += ((Number) score).doubleValue();
+                            } else {
+                                System.out.println("Warning: Score for student " + student.getUsername() +
+                                        " is not a number: " + score);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Error processing score for student " + student.getUsername() +
+                                    ": " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("No score found for student: " + student.getUsername());
+                    }
+                } else {
+                    System.out.println("No submissions map found in quiz submission");
+                }
+            }
+            grade+= quizzesScore;
+            System.out.println("THE STUDENT: "+ student.getId()+", THE GRADE: "+grade);
+            studentsStats.put(student.getUsername(), grade);
+        }
+        stats.put("studentStats", studentsStats);
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        System.out.println("before quiz statsss");
+
+        Map<String, Object> studentQuizStats = new HashMap<>();
+        int passedCount=0;
+        int failedCount=0;
+
+        for(int i=0;i<quizzes.size();i++) {
+
+            Map<String, Object> quizSubmissionMap = quizStats.get(i);
+            @SuppressWarnings("unchecked")
+            Map<String,Object> submissions= (Map<String,Object>)quizSubmissionMap.get("submissions");
+
+            double fullmark = submissions.get("fullmark") instanceof Number ?
+                    ((Number) submissions.get("fullmark")).doubleValue() : 0.0;
+            double average = submissions.get("average") instanceof Number ?
+                    ((Number) submissions.get("average")).doubleValue() : 0.0;
+
+            Long quizId = (Long)submissions.get("quiz");
+            Quiz quiz = quizRepository.findById(quizId).orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
+            submissions.remove("fullmark");
+            submissions.remove("average");
+
+            for (Map.Entry<String, Object> entry : submissions.entrySet()) {
+                String username = entry.getKey();
+                Object score = entry.getValue();
+                System.out.println("Username: " + username + ", Score: " + score);
+                double scorePercentage = (((Number) score).doubleValue() / fullmark) * 100;
+                if (scorePercentage >= 50) {
+                    passedCount++;
+                } else {
+                    failedCount++;
+                }
+            }
+
+            int totalQuizSubmissions=passedCount+failedCount;
+            float passPercentage= totalQuizSubmissions > 0 ? ((float) passedCount/totalQuizSubmissions) *100 : 0.0f;
+            float failPercentage= totalQuizSubmissions > 0 ? ((float) failedCount/totalQuizSubmissions) *100 : 0.0f;
+            List<Float> percentages=new ArrayList<>();
+            percentages.add(passPercentage);
+            percentages.add(failPercentage);
+            studentQuizStats.put(quiz.getTitle(), percentages);
+        }
+
+        //////////////////////////////////////////////////////////////////
+
+        stats.put("Quiz Submission Stats", studentQuizStats);
+        System.out.println("Now we are returning the stat from service to controller...");
         return stats;
     }
 
@@ -476,11 +733,11 @@ public class ReportService {
             g2d.setColor(WHITE);
             g2d.fillRect(0, 0, 1600, 1200);
 
-            System.out.println("Creating submission rate chart...");
-            JFreeChart submissionChart = createSubmissionRateChart(statistics);
-            if (submissionChart == null) {
-                throw new IllegalStateException("Failed to create submission rate chart");
-            }
+//            System.out.println("Creating submission rate chart...");
+//            JFreeChart submissionChart = createSubmissionRateChart(statistics);
+//            if (submissionChart == null) {
+//                throw new IllegalStateException("Failed to create submission rate chart");
+//            }
 
             System.out.println("Creating grade distribution chart...");
             JFreeChart gradeChart = createGradeDistributionChart(statistics);
@@ -500,10 +757,16 @@ public class ReportService {
                 throw new IllegalStateException("Failed to create assignment performance chart");
             }
 
+            System.out.println("Creating Quiz Performance Chart");
+            JFreeChart quizPerformanceChart = createQuizPerformanceChart(statistics);
+            if (quizPerformanceChart == null) {
+                throw new IllegalStateException("Failed to create quiz performance chart");
+            }
+
             System.out.println("Drawing charts...");
             try {
-                submissionChart.draw(g2d, new Rectangle2D.Double(0, 0, 800, 600));
-                gradeChart.draw(g2d, new Rectangle2D.Double(800, 0, 800, 600));
+                gradeChart.draw(g2d, new Rectangle2D.Double(0, 0, 800, 600));
+                quizPerformanceChart.draw(g2d, new Rectangle2D.Double(800, 0, 800, 600));
                 attendanceChart.draw(g2d, new Rectangle2D.Double(0, 600, 800, 600));
                 assignmentPerformanceChart.draw(g2d, new Rectangle2D.Double(800, 600, 800, 600));
             } catch (Exception e) {
@@ -528,16 +791,84 @@ public class ReportService {
             throw new IOException("Failed to generate charts: " + e.getMessage(), e);
         }
     }
+    private JFreeChart createQuizPerformanceChart(Map<String, Object> statistics) {
+        try {
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            Map<String, Object> quizStats = (Map<String, Object>) statistics.get("Quiz Submission Stats");
+
+            if (quizStats == null || quizStats.isEmpty()) {
+                dataset.addValue(0, "Quizzes", "No Data");
+                return ChartFactory.createBarChart(
+                        "Quiz Performance (No Data)",
+                        "Quiz",
+                        "Percentage",
+                        dataset,
+                        PlotOrientation.VERTICAL,
+                        true,
+                        true,
+                        false
+                );
+            }
+
+            // Add data for each quiz
+            for (Map.Entry<String, Object> entry : quizStats.entrySet()) {
+                String quizTitle = entry.getKey();
+                @SuppressWarnings("unchecked")
+                List<Float> percentages = (List<Float>) entry.getValue();
+
+                // Add passing percentage (index 0)
+                dataset.addValue(percentages.get(0), "Passing", quizTitle);
+                // Add failing percentage (index 1)
+                dataset.addValue(percentages.get(1), "Failing", quizTitle);
+            }
+
+            // Create the chart
+            JFreeChart chart = ChartFactory.createStackedBarChart(
+                    "Quiz Performance",
+                    "Quiz",
+                    "Percentage",
+                    dataset,
+                    PlotOrientation.VERTICAL,
+                    true,  // include legend
+                    true,  // include tooltips
+                    false  // include URLs
+            );
+
+            // Customize the appearance
+            CategoryPlot plot = (CategoryPlot) chart.getPlot();
+
+            // Set colors for passing (green) and failing (red)
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            renderer.setSeriesPaint(0, Color.GREEN);  // Green for passing
+            renderer.setSeriesPaint(1, Color.RED);  // Red for failing
+
+            // Customize the range axis to show percentages from 0 to 100
+            NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
+            rangeAxis.setRange(0.0, 100.0);
+            rangeAxis.setTickUnit(new NumberTickUnit(10));
+
+            // Add value labels on the bars
+            renderer.setDefaultItemLabelsVisible(true);
+            renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+
+            return chart;
+
+        } catch (Exception e) {
+            System.err.println("Error creating quiz performance chart: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     private JFreeChart createSubmissionRateChart(Map<String, Object> statistics) {
         try {
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
             Double submissionRate = convertToDouble(statistics.get("overallSubmissionRate"));
-            Double onTimeRate = convertToDouble(statistics.get("overallOnTimeSubmissionRate"));
+//            Double onTimeRate = convertToDouble(statistics.get("overallOnTimeSubmissionRate"));
 
             dataset.addValue(submissionRate, "Submission Rate", "Overall");
-            dataset.addValue(onTimeRate, "On-Time Rate", "Overall");
+//            dataset.addValue(onTimeRate, "On-Time Rate", "Overall");
 
             return ChartFactory.createBarChart(
                     "Submission Rates",
@@ -571,51 +902,102 @@ public class ReportService {
 
     private JFreeChart createGradeDistributionChart(Map<String, Object> statistics) {
         try {
-            DefaultPieDataset dataset = new DefaultPieDataset();
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//            List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
-
-            if (assignmentsStats == null || assignmentsStats.isEmpty()) {
-                dataset.setValue("No Data", 1);
-                return ChartFactory.createPieChart(
+            Map<String, Object> studentStats = (Map<String, Object>) statistics.get("studentStats");
+            System.out.println("IN GRADE DISTRIBUTION CHART");
+            for (Map.Entry<String, Object> entry : studentStats.entrySet()) {
+                System.out.println("Key = " + entry.getKey() + ", Value = " + entry.getValue());
+            }
+            System.out.println("----------------------------------------");
+            if (studentStats.isEmpty()) {
+                dataset.addValue(0, "Grades", "No Data");
+                return ChartFactory.createLineChart(
                         "Grade Distribution (No Data)",
+                        "Grade Range",
+                        "Frequency",
                         dataset,
+                        PlotOrientation.VERTICAL,
                         true,
                         true,
                         false
                 );
             }
 
-            Map<String, Long> totalGradeDistribution = new HashMap<>();  // Changed to Long
-            for (Map<String, Object> assignment : assignmentsStats) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> distribution = (Map<String, Object>) assignment.get("gradeDistribution");  // Changed to Object
-                if (distribution != null) {
-                    distribution.forEach((grade, count) -> {
-                        Long longCount;
-                        if (count instanceof Integer) {
-                            longCount = ((Integer) count).longValue();
-                        } else if (count instanceof Long) {
-                            longCount = (Long) count;
-                        } else {
-                            longCount = Long.valueOf(count.toString());
-                        }
-                        totalGradeDistribution.merge(grade, longCount, Long::sum);
-                    });
-                }
-            }
 
+            Map<String, Long> totalGradeDistribution = new HashMap<>();  // Changed to Long
+            for (Object gradeObj : studentStats.values()) {
+                double grade = convertToDouble(gradeObj);
+                String gradeCategory;
+                if (grade >= 95) {
+                    gradeCategory = "A+ (95-100)";
+                } else if (grade >= 90) {
+                    gradeCategory = "A (90-94)";
+                } else if (grade >= 85) {
+                    gradeCategory = "B+ (85-89)";
+                } else if (grade >= 80) {
+                    gradeCategory = "B (80-84)";
+                } else if (grade >= 75) {
+                    gradeCategory = "C+ (75-79)";
+                } else if (grade >= 70) {
+                    gradeCategory = "C (70-74)";
+                } else if (grade >= 65) {
+                    gradeCategory = "D+ (65-69)";
+                } else if (grade >= 60) {
+                    gradeCategory = "D (60-64)";
+                } else {
+                    gradeCategory = "F (Below 60)";
+                }
+                totalGradeDistribution.merge(gradeCategory, 1L, Long::sum);
+            }
+//            for (Map<String, Object> assignment : assignmentsStats) {
+//                @SuppressWarnings("unchecked")
+//                Map<String, Object> distribution = (Map<String, Object>) assignment.get("gradeDistribution");  // Changed to Object
+//                if (distribution != null) {
+//                    distribution.forEach((grade, count) -> {
+//                        Long longCount;
+//                        if (count instanceof Integer) {
+//                            longCount = ((Integer) count).longValue();
+//                        } else if (count instanceof Long) {
+//                            longCount = (Long) count;
+//                        } else {
+//                            longCount = Long.valueOf(count.toString());
+//                        }
+//                        totalGradeDistribution.merge(grade, longCount, Long::sum);
+//                    });
+//                }
+//            }
+
+//            if (totalGradeDistribution.isEmpty()) {
+//                dataset.setValue("No Grades", 1);
+//            } else {
+//                totalGradeDistribution.forEach((grade, count) ->
+//                        dataset.setValue(grade, count.doubleValue())  // Convert to double for the dataset
+//                );
+//            }
+//
+//            return ChartFactory.createPieChart(
+//                    "Grade Distribution",
+//                    dataset,
+//                    true,
+//                    true,
+//                    false
+//            );
             if (totalGradeDistribution.isEmpty()) {
-                dataset.setValue("No Grades", 1);
+                dataset.addValue(0, "Grades", "No Grades");
             } else {
                 totalGradeDistribution.forEach((grade, count) ->
-                        dataset.setValue(grade, count.doubleValue())  // Convert to double for the dataset
+                        dataset.addValue(count, "Grades", grade)
                 );
             }
 
-            return ChartFactory.createPieChart(
+            return ChartFactory.createLineChart(
                     "Grade Distribution",
+                    "Grade Range",
+                    "Frequency",
                     dataset,
+                    PlotOrientation.VERTICAL,
                     true,
                     true,
                     false
@@ -673,6 +1055,10 @@ public class ReportService {
 
     private JFreeChart createAttendanceChart(Map<String, Object> statistics) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        System.out.println("WE ARE IN ATTENDANCE CHART");
+        System.out.println(statistics.get("attendanceRate"));
+        System.out.println(statistics.get("averageAttendancePerLecture"));
+        System.out.println("--------------------------------------");
         dataset.addValue((Number) statistics.get("attendanceRate"), "Attendance", "Overall");
         dataset.addValue((Number) statistics.get("averageAttendancePerLecture"), "Average per Lecture", "Overall");
 
@@ -692,13 +1078,15 @@ public class ReportService {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
-
+        System.out.println("WE ARE IN ASSIGNMENT PERFORMANCE CHART");
         for (Map<String, Object> assignment : assignmentsStats) {
             String title = (String) assignment.get("assignmentTitle");
+            System.out.println(title);
             dataset.addValue((Number) assignment.get("averageGrade"), "Average Grade", title);
             dataset.addValue((Number) assignment.get("highestGrade"), "Highest Grade", title);
             dataset.addValue((Number) assignment.get("lowestGrade"), "Lowest Grade", title);
         }
+        System.out.println("-----------------------------------------");
 
         return ChartFactory.createLineChart(
                 "Assignment Performance",
@@ -711,9 +1099,5 @@ public class ReportService {
                 false
         );
     }
-
-
-
-
 
 }

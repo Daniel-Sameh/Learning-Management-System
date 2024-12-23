@@ -64,6 +64,7 @@ public class PostController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_STUDENT')")
     @GetMapping("/get/{id}/course/{courseId}")
     public ResponseEntity<PostDto> getPost(@AuthenticationPrincipal User user, @PathVariable Long id, @PathVariable Long courseId) {
         Optional<Post> post = postService.getPostById(id);
@@ -80,7 +81,7 @@ public class PostController {
         PostDto postDTO = new PostDto(post.get().getId(), post.get().getTitle(), post.get().getContent());
         return ResponseEntity.ok(postDTO);
     }
-
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_STUDENT')")
     @GetMapping("/get/course/{courseId}")
     public ResponseEntity<List<PostDto>> getAllPosts(@AuthenticationPrincipal User user, @PathVariable Long courseId) {
         List<Post> posts = postService.getAllPostsByCourseId(courseId);
@@ -100,8 +101,8 @@ public class PostController {
         return ResponseEntity.ok(postDTOs);
     }
 
-    @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deletePost(@AuthenticationPrincipal User user, @PathVariable Long id) {
         if (user.getRole().toString().equals("INSTRUCTOR")) {
             System.out.println("YES I am instructor deleting post...");
@@ -128,8 +129,9 @@ public class PostController {
             return ResponseEntity.status(404).body("Post not found: " + e.getMessage());
         }
     }
-    @PutMapping("/update/{id}")
+
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @PutMapping("/update/{id}")
     public ResponseEntity<String> updatepost(@PathVariable Long id, @RequestHeader("Authorization")String authorizationHeader,@RequestBody Map<String, Object> request) {
         try {
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {

@@ -6,8 +6,10 @@ import com.swe.lms.AssessmentManagement.dto.QuizDto;
 import com.swe.lms.AssessmentManagement.dto.QuizSubmissionDto;
 import com.swe.lms.AssessmentManagement.entity.Quiz;
 import com.swe.lms.AssessmentManagement.entity.QuizSubmission;
+import com.swe.lms.courseManagement.Repository.CourseRepository;
 import com.swe.lms.courseManagement.Service.CourseService;
 import com.swe.lms.courseManagement.entity.Course;
+import com.swe.lms.courseManagement.entity.Post;
 import com.swe.lms.userManagement.entity.Role;
 import com.swe.lms.userManagement.entity.User;
 import lombok.AllArgsConstructor;
@@ -30,6 +32,7 @@ public class QuizController {
     private final CourseService courseService;
     private final QuizRepository quizRepository;
     private final QuizMapper quizMapper;
+    private final CourseRepository courseRepository;
 
 
 
@@ -40,36 +43,42 @@ public class QuizController {
         if (instructor.getRole() != Role.INSTRUCTOR) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only instructors can create quizzes.");
         }
-        Long courseId = quizRequest.getCourseId();
-        Optional<Course> course = courseService.findById(courseId);
-        if(course.isEmpty()){
+        Optional<Course> course = courseRepository.findById(quizRequest.getCourseId());
+        if (course.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course not found");
-
         }
-
+        if (instructor.getRole().toString().equals("INSTRUCTOR")){
+            if (course.get().getInstructor().getId() != instructor.getId()) {
+                return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
+            }
+        }
         Quiz quiz=quizService.createQuizFromBank(instructor, quizRequest.getTitle(),quizRequest.getNumQuestions(),quizRequest.getStartTime(), quizRequest.getTimeLimit(), course);
 
-//        quizService.notify(
-//                "New Announcement: \"" + course.get().getName() + "\"",
-//                "Title: New Question Bank Quiz"+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
-//                +"<br> Best of luck.",
-//                quiz
-//        );
+        quizService.notify(
+                "New Announcement: \"" + course.get().getName() + "\"",
+                "Title: New Question Bank Quiz"+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
+                +"<br> Best of luck.",
+                quiz
+        );
         return ResponseEntity.ok("Question bank quiz Created");
 
     }
 
 
     @PostMapping("/create/manual")
-    @PreAuthorize("hasRole('ROLE_INSTRUCTOR') or hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
     public ResponseEntity<?> createQuizByAddingQuestions(@AuthenticationPrincipal User instructor, @RequestBody ManualQuizRequest manualQuizRequest) {
         if (instructor.getRole() != Role.INSTRUCTOR) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Only instructors can create quizzes.");
         }
-        Long courseId = manualQuizRequest.getCourseid();
-        Optional<Course> course = courseService.findById(courseId);
-        if (!course.isPresent()) {
+        Optional<Course> course = courseRepository.findById(manualQuizRequest.getCourseid());
+        if (course.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course not found");
+        }
+        if (instructor.getRole().toString().equals("INSTRUCTOR")){
+            if (course.get().getInstructor().getId() != instructor.getId()) {
+                return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
+            }
         }
         Quiz quiz=quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getQuestionsNum(),manualQuizRequest.getStartTime(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
         quizService.notify(
@@ -138,10 +147,19 @@ public class QuizController {
 
     @DeleteMapping("/delete/{quizId}")
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
-    public ResponseEntity<?> deleteQuiz(@PathVariable long quizId){
+    public ResponseEntity<?> deleteQuiz(@AuthenticationPrincipal User instructor,@PathVariable long quizId){
         Optional<Quiz> quiz= quizRepository.findById(quizId);
         if(quiz.isEmpty()){
             return ResponseEntity.status(404).body("No quiz with this id");
+        }
+        Optional<Course> course = courseRepository.findById(quiz.get().getCourse().getId());
+        if (course.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course not found");
+        }
+        if (quiz.get().getInstructor().getRole().toString().equals("INSTRUCTOR")){
+            if (quiz.get().getInstructor().getId() != instructor.getId()) {
+                return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
+            }
         }
         quizRepository.delete(quiz.get());
         return ResponseEntity.ok("Quiz deleted successfully");
@@ -149,24 +167,30 @@ public class QuizController {
 
     @PutMapping("/update/{quizId}")
     @PreAuthorize("hasRole('ROLE_INSTRUCTOR')")
-    public ResponseEntity<?> updateQuiz(@PathVariable long quizId, @RequestBody QuizUpdateRequest updateRequest){
+    public ResponseEntity<?> updateQuiz(@AuthenticationPrincipal User instructor, @PathVariable long quizId, @RequestBody QuizUpdateRequest updateRequest){
 
         Optional<Quiz> quizOptional= quizRepository.findById(quizId);
         if(quizOptional.isEmpty()){
             return ResponseEntity.status(404).body("No quiz with this id");
         }
+
         Quiz quiz=quizOptional.get();
-        Optional<Course> course = courseService.findById(updateRequest.getCourseId());
-        if(course.isEmpty()){
+        Optional<Course> course = courseRepository.findById(quiz.getCourse().getId());
+        if (course.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Course not found");
         }
+        if (quiz.getInstructor().getRole().toString().equals("INSTRUCTOR")){
+            if (quiz.getInstructor().getId() != instructor.getId()) {
+                return ResponseEntity.status(403).body("You are not authorized to create a quiz.");
+            }
+        }
         quiz= quizService.updateQuiz(quiz,updateRequest.getTitle(),updateRequest.getQuestionsNum(), updateRequest.getStartTime(), updateRequest.getTimeLimit(), course);
-//        quizService.notify(
-//                "New Announcement: \"" + course.get().getName() + "\"",
-//                "Title: The quiz"+quiz.getTitle() +" was updated. " + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
-//                        +"<br> Best of luck.",
-//                quiz
-//        );
+        quizService.notify(
+                "New Announcement: \"" + course.get().getName() + "\"",
+                "Title: The quiz"+quiz.getTitle() +" was updated. " + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
+                        +"<br> Best of luck.",
+                quiz
+        );
         return ResponseEntity.ok("Quiz updated successfully");
     }
 

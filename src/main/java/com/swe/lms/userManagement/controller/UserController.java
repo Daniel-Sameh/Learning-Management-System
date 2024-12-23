@@ -73,7 +73,7 @@ public class UserController {
 
 
     @PutMapping("/update/profile/{userId}")
-    public ResponseEntity< Map<String, Object>> createCourse(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization")String authorizationHeader, @PathVariable Long userId) {
+    public ResponseEntity< Map<String, Object>> updateprofile(@RequestBody Map<String, Object> payload, @RequestHeader("Authorization")String authorizationHeader, @PathVariable Long userId) {
 
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Authorization header is missing or invalid");

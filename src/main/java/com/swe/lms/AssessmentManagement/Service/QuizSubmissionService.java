@@ -94,7 +94,7 @@ public class QuizSubmissionService {
             quizQuestionAnswers.setQuizSubmission(quizSubmission);
 
             quizQuestionAnswersRepository.save(quizQuestionAnswers);
-
+//            quizSubmission.addAnswer(quizQuestionAnswers);
             quizSubmission.getAnswers().add(quizQuestionAnswers);//add the object quiz questions answer to the list in quiz submission
         }
         quizSubmission.setScore(student_score);
@@ -127,24 +127,25 @@ public class QuizSubmissionService {
         return quizSubmission;
     }
 
-    public List<Map<String, Object>> getQuizSubmissions(Long quizId){
+    public Map<String, Object> getQuizSubmissions(Long quizId){
         Optional<List<QuizSubmission>> quizSubmissions=quizSubmissionRepository.findAllByQuiz_Id(quizId);
         if (quizSubmissions.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No submissions found for this quiz.");
         }
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new ResourceNotFoundException("Quiz not found"));
-        List<Map<String, Object>> ret = quizSubmissions.get().stream().map(submission -> {
-            Map<String, Object> result = new HashMap<>();
-            result.put("username", submission.getStudent().getUsername());
-            result.put("score", submission.getScore());
-            return result;
-        }).collect(Collectors.toList());
+        Map<String, Object> ret = new HashMap<>();
+        quizSubmissions.get().forEach(submission -> {
+            ret.put(submission.getStudent().getUsername(), submission.getScore());
+        });
         int size = quizSubmissions.get().size();
         float total = quizSubmissions.get().stream().map(QuizSubmission::getScore).reduce(0f, Float::sum);
-        ret.add(Map.of("average", total / size));
-        ret.add(Map.of("fullmark", quiz.getFullmark()));
-
+//        ret.add(Map.of("fullmark", quiz.getFullmark()));
+//        ret.add(Map.of("average", total / size));
+        ret.put("fullmark", quiz.getFullmark());
+        ret.put("average", total / size);
+        ret.put("quiz", quiz.getId());
         return ret;
     }
+
 }

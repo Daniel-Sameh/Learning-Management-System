@@ -28,6 +28,7 @@ public class CourseController {
         this.courseService = courseService;
         this.userRepository = userRepository;
     }
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
     @PostMapping("/{courseId}/enroll/{userId}")
     public ResponseEntity<String> enrollUserInCourse(
             @PathVariable Long courseId,

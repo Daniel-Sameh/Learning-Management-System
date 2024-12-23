@@ -32,6 +32,7 @@ public class QuizSubmissionController {
 
     @Autowired
     private final QuizSubmissionService quizSubmissionService;
+    @Autowired
     private final QuizSubmissionRepository quizSubmissionRepository;
     @Autowired
     private final QuizSubmissionMapper quizSubmissionMapper;
@@ -49,7 +50,7 @@ public class QuizSubmissionController {
         } catch (Exception e) {
             logger.error("Error occurred while submitting quiz: {}", e.getMessage(), e);
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error submitting quiz");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error submitting quiz: "+ e.getMessage().split("\"", 2)[1]);
         }
     }
     @GetMapping ("/{studentId}")

@@ -7,9 +7,10 @@ import com.swe.lms.courseManagement.Repository.CourseRepository;
 import com.swe.lms.courseManagement.entity.Course;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-
+@Component
 public class QuestionMapper {
 
     public static QuestionDto toDTO(Question question) {

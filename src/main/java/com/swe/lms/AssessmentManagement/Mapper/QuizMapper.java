@@ -13,6 +13,7 @@ public class QuizMapper {
         dto.setStartTime(quiz.getStartTime());
         dto.setTitle(quiz.getTitle());
         dto.setId(quiz.getId());
+        dto.setQuestions(quiz.getQuestions());
         return dto;
     }
 }
