@@ -34,9 +34,17 @@ public class Quiz {
     @Column(nullable = false)
     private Integer questionsNumber;
 
-    @OneToMany(mappedBy = "quizId", cascade = CascadeType.ALL)
-    private List<Question> questions = new ArrayList<>();
-
+    // @OneToMany(mappedBy = "quizId", cascade = CascadeType.ALL)
+    // private List<Question> questions = new ArrayList<>();
+    
+@ManyToMany(cascade = CascadeType.ALL)
+@JoinTable(
+        name = "quiz_question",
+        joinColumns = @JoinColumn(name = "quiz_id"),
+        inverseJoinColumns = @JoinColumn(name = "question_id")
+)
+private List<Question> questions = new ArrayList<>();
+    
     @ManyToOne
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;
