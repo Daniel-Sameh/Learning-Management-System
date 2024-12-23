@@ -17,7 +17,7 @@ public class ManualQuizRequest {
     private String title;
     private List<QuestionRequest> questions;
     private Integer timeLimit;
-    private Integer questionsNum;
+    // private Integer questionsNum;
     private long courseid;
     private String startTime;
 
