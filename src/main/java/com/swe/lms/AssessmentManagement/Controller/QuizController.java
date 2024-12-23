@@ -56,8 +56,8 @@ public class QuizController {
 
         quizService.notify(
                 "New Announcement: \"" + course.get().getName() + "\"",
-                "Title: New Question Bank Quiz"+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
-                +"<br> Best of luck.",
+                "Title: New Question Bank Quiz "+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" minutes till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
+                        +"<br> Best of luck.",
                 quiz
         );
         return ResponseEntity.ok("Question bank quiz Created");
@@ -83,7 +83,7 @@ public class QuizController {
         Quiz quiz=quizService.createQuizByAddingQuestions(instructor,manualQuizRequest.getTitle(),manualQuizRequest.getQuestionsNum(),manualQuizRequest.getStartTime(), manualQuizRequest.getTimeLimit(),manualQuizRequest.getQuestions(), course);
         quizService.notify(
                 "New Announcement: \"" + course.get().getName() + "\"",
-                "Title: New Quiz"+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
+                "Title: New Quiz "+quiz.getTitle()  + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" minutes till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
                         +"<br> Best of luck.",
                 quiz
         );
@@ -187,7 +187,7 @@ public class QuizController {
         quiz= quizService.updateQuiz(quiz,updateRequest.getTitle(),updateRequest.getQuestionsNum(), updateRequest.getStartTime(), updateRequest.getTimeLimit(), course);
         quizService.notify(
                 "New Announcement: \"" + course.get().getName() + "\"",
-                "Title: The quiz"+quiz.getTitle() +" was updated. " + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
+                "Title: The quiz"+quiz.getTitle() +" was updated. " + "<br>Content: This quiz will be held on "+ quiz.getStartTime()+". You will have "+quiz.getTimeLimit()+" minutes till the end of the quiz."+", It consists of " + quiz.getQuestionsNumber()+ " questions. "
                         +"<br> Best of luck.",
                 quiz
         );
