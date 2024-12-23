@@ -35,6 +35,12 @@ public class AssignmentController {
         System.out.println("Deadline: " + deadline);
 //        System.out.println("Instructor: " + instructor);
         Assignment assignment = assignmentService.createAssignment(courseId, title, description, deadline, instructor);
+        assignmentService.notify(
+                "New Announcement: \"" + assignment.getCourse().getName() + "\"",
+                "Title: New Assignment "+assignment.getTitle()  + "<br>Content: What you have to deliver: "+assignment.getDescription()+". The deadline is " + assignment.getDeadline()
+                        +"<br> Best of Luck.",
+                assignment
+        );
         return ResponseEntity.ok(new AssignmentDto(assignment.getTitle(), assignment.getDescription(), assignment.getDeadline().toString(), assignment.getCourse().getId(), instructor.getId()));
     }
 
@@ -105,6 +111,12 @@ public class AssignmentController {
 //        } else if (response.equals("You are not the instructor of this assignment.")) {
 //            return ResponseEntity.status(403).body(response);
 //        }
+        assignmentService.notify(
+                "New Announcement: \"" + assignment.get().getCourse().getName() + "\"",
+                "Title: Your Assignment has been Graded"+assignment.get().getTitle()  + "<br>Content: Please check your grade. If you have any complaints please send me an email on this email address: "+assignment.get().getInstructor().getEmail()
+                        +"<br> Best of Luck.",
+                assignment.get()
+        );
         return ResponseEntity.ok(response);
     }
 
