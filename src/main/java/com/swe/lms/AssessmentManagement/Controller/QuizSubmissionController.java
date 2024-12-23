@@ -62,7 +62,7 @@ public class QuizSubmissionController {
         }
         List<QuizSubmissionDto> submissionDtos=new ArrayList<>();
         for (QuizSubmission quizSubmission : submissions) {
-            submissionDtos.add(quizSubmissionMapper.toDTO(quizSubmission));
+            submissionDtos.add(QuizSubmissionMapper.toDTO(quizSubmission));
         }
 
         return ResponseEntity.ok(submissionDtos);
