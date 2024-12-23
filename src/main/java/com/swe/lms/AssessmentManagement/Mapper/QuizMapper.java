@@ -13,7 +13,18 @@ public class QuizMapper {
         dto.setStartTime(quiz.getStartTime());
         dto.setTitle(quiz.getTitle());
         dto.setId(quiz.getId());
-        dto.setQuestions(quiz.getQuestions());
+        List<QuestionDto> questionDTOs = quiz.getQuestions().stream()
+                .map(question -> {
+                    QuestionDto questionDTO = new QuestionDto();
+                    questionDTO.setId(question.getId());
+                    questionDTO.setQuestionText(question.getQuestionText());
+                    questionDTO.setScore(question.getScore());
+                    questionDTO.setCourseid(question.getCourse().getId());
+                    questionDTO.setCourseName(question.getCourse().getName());
+                    return questionDTO;
+                })
+                .collect(Collectors.toList());
+        dto.setQuestions(questionDTOs);
         return dto;
     }
 }
