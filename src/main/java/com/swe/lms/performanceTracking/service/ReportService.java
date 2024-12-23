@@ -496,7 +496,9 @@ public class ReportService {
                         .mapToDouble(AssignmentSubmission::getGrade)
                         .average()
                         .orElse(0.0);
-
+                System.out.println(":::::::::::::::::::::::::::::::::::::::::::::::::::::");
+                System.out.println("HERE IS THE AVERAGE GRADE OF ASSIGNMENT: "+avgGrade);
+                System.out.println(":::::::::::::::::::::::::::::::::::::::::::::::::::::");
                 double highestGrade = assignments.stream()
                         .mapToDouble(AssignmentSubmission::getGrade)
                         .max()
@@ -926,7 +928,16 @@ public class ReportService {
             }
 
 
-            Map<String, Long> totalGradeDistribution = new HashMap<>();  // Changed to Long
+            Map<String, Long> totalGradeDistribution = new LinkedHashMap<>();  // Changed to Long
+            List<String> gradeCategories = Arrays.asList(
+                    "F (Below 60)", "D (60-64)", "D+ (65-69)", "C (70-74)", "C+ (75-79)",
+                    "B (80-84)", "B+ (85-89)", "A (90-94)", "A+ (95-100)"
+            );
+
+            for (String category : gradeCategories) {
+                totalGradeDistribution.put(category, 0L);
+            }
+
             for (Object gradeObj : studentStats.values()) {
                 double grade = convertToDouble(gradeObj);
                 String gradeCategory;
@@ -950,6 +961,11 @@ public class ReportService {
                     gradeCategory = "F (Below 60)";
                 }
                 totalGradeDistribution.merge(gradeCategory, 1L, Long::sum);
+            }
+            for (String category : gradeCategories) {
+                if (totalGradeDistribution.get(category) == 0) {
+                    totalGradeDistribution.remove(category);
+                }
             }
 //            for (Map<String, Object> assignment : assignmentsStats) {
 //                @SuppressWarnings("unchecked")
@@ -1074,21 +1090,73 @@ public class ReportService {
         );
     }
 
+//    private JFreeChart createAssignmentPerformanceChart(Map<String, Object> statistics) {
+//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+//        @SuppressWarnings("unchecked")
+//        List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
+//        System.out.println("WE ARE IN ASSIGNMENT PERFORMANCE CHART");
+//        for (Map<String, Object> assignment : assignmentsStats) {
+//            String title = (String) assignment.get("assignmentTitle");
+//            System.out.println(title);
+//            dataset.addValue((Number) assignment.get("averageGrade"), "Average Grade", title);
+//            dataset.addValue((Number) assignment.get("highestGrade"), "Highest Grade", title);
+//            dataset.addValue((Number) assignment.get("lowestGrade"), "Lowest Grade", title);
+//        }
+//        System.out.println("-----------------------------------------");
+//
+//        return ChartFactory.createLineChart(
+//                "Assignment Performance",
+//                "Assignment",
+//                "Grade",
+//                dataset,
+//                PlotOrientation.VERTICAL,
+//                true,
+//                true,
+//                false
+//        );
+//    }
     private JFreeChart createAssignmentPerformanceChart(Map<String, Object> statistics) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+
+        // Safely extract assignmentsStats
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
-        System.out.println("WE ARE IN ASSIGNMENT PERFORMANCE CHART");
-        for (Map<String, Object> assignment : assignmentsStats) {
-            String title = (String) assignment.get("assignmentTitle");
-            System.out.println(title);
-            dataset.addValue((Number) assignment.get("averageGrade"), "Average Grade", title);
-            dataset.addValue((Number) assignment.get("highestGrade"), "Highest Grade", title);
-            dataset.addValue((Number) assignment.get("lowestGrade"), "Lowest Grade", title);
-        }
-        System.out.println("-----------------------------------------");
 
-        return ChartFactory.createLineChart(
+        if (assignmentsStats == null || assignmentsStats.isEmpty()) {
+            System.out.println("No assignment statistics available to display.");
+            // Optionally, populate with placeholder data to avoid an empty graph
+            dataset.addValue(0, "Average Grade", "No Data");
+            dataset.addValue(0, "Highest Grade", "No Data");
+            dataset.addValue(0, "Lowest Grade", "No Data");
+        } else {
+            for (Map<String, Object> assignment : assignmentsStats) {
+                if (assignment == null) {
+                    System.out.println("Skipping null assignment entry.");
+                    continue;
+                }
+
+                String title = (String) assignment.get("assignmentTitle");
+                System.out.println("ASSIGNMENT TITLE: "+title);
+                System.out.println("ASSIGNMENT AVERAGE GRADE: "+assignment.get("averageGrade"));
+                System.out.println("ASSIGNMENT HIGHEST GRADE: "+assignment.get("highestGrade"));
+                System.out.println("ASSIGNMENT LOWEST GRADE: "+assignment.get("lowestGrade"));
+                System.out.println(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::");
+                Number averageGrade = (Number) assignment.getOrDefault("averageGrade", 0);
+                Number highestGrade = (Number) assignment.getOrDefault("highestGrade", 0);
+                Number lowestGrade = (Number) assignment.getOrDefault("lowestGrade", 0);
+
+                if (title == null || averageGrade == null || highestGrade == null || lowestGrade == null) {
+                    System.out.println("Invalid data for assignment: " + assignment);
+                    continue;
+                }
+
+                dataset.addValue(averageGrade, "Average Grade", title);
+                dataset.addValue(highestGrade, "Highest Grade", title);
+                dataset.addValue(lowestGrade, "Lowest Grade", title);
+            }
+        }
+
+        return ChartFactory.createBarChart(
                 "Assignment Performance",
                 "Assignment",
                 "Grade",
@@ -1098,6 +1166,45 @@ public class ReportService {
                 true,
                 false
         );
+
     }
+//    private JFreeChart createAssignmentPerformanceChart(Map<String, Object> statistics) {
+//        DefaultPieDataset pieDataset = new DefaultPieDataset();
+//
+//        @SuppressWarnings("unchecked")
+//        List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
+//
+//        if (assignmentsStats == null || assignmentsStats.isEmpty()) {
+//            System.out.println("No assignment statistics available to display.");
+//            pieDataset.setValue("No Data", 1); // Placeholder for no data
+//        } else {
+//            for (Map<String, Object> assignment : assignmentsStats) {
+//                if (assignment == null) {
+//                    System.out.println("Skipping null assignment entry.");
+//                    continue;
+//                }
+//
+//                String title = (String) assignment.get("assignmentTitle");
+//                Number averageGrade = (Number) assignment.getOrDefault("averageGrade", 0);
+//
+//                if (title == null || averageGrade == null) {
+//                    System.out.println("Invalid data for assignment: " + assignment);
+//                    continue;
+//                }
+//
+//                // Add data for the pie chart (using average grades as an example metric)
+//                pieDataset.setValue(title, averageGrade.doubleValue());
+//            }
+//        }
+//
+//        return ChartFactory.createPieChart(
+//                "Average Assignments Grades Distribution", // Chart title
+//                pieDataset,                   // Data
+//                true,                         // Include legend
+//                true,                         // Use tooltips
+//                false                         // URLs
+//        );
+//    }
+
 
 }
