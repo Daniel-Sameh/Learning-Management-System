@@ -82,15 +82,12 @@ public class ReportController {
             if (stats == null) {
                 return ResponseEntity.notFound().build();
             }
-            System.out.println("1- I hate my life...");
-            // Generate charts
+
             byte[] chartImage = reportService.generateCharts(stats);
-            System.out.println("2- I hate my life...");
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.IMAGE_PNG);
             headers.setContentDispositionFormData("attachment", "performance_charts.png");
-            System.out.println("3- I hate my life...");
 
             return ResponseEntity.ok()
                     .headers(headers)

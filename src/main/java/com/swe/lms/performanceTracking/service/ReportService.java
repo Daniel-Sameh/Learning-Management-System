@@ -824,7 +824,7 @@ public class ReportService {
                 dataset.addValue(percentages.get(1), "Failing", quizTitle);
             }
 
-            // Create the chart
+
             JFreeChart chart = ChartFactory.createStackedBarChart(
                     "Quiz Performance",
                     "Quiz",
@@ -836,10 +836,10 @@ public class ReportService {
                     false  // include URLs
             );
 
-            // Customize the appearance
+
             CategoryPlot plot = (CategoryPlot) chart.getPlot();
 
-            // Set colors for passing (green) and failing (red)
+
             BarRenderer renderer = (BarRenderer) plot.getRenderer();
             renderer.setSeriesPaint(0, Color.GREEN);  // Green for passing
             renderer.setSeriesPaint(1, Color.RED);  // Red for failing
@@ -1025,49 +1025,6 @@ public class ReportService {
         }
     }
 
-// Update other chart creation methods similarly...
-
-//    private JFreeChart createSubmissionRateChart(Map<String, Object> statistics) {
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        dataset.addValue((Number) statistics.get("overallSubmissionRate"), "Submission Rate", "Overall");
-//        dataset.addValue((Number) statistics.get("overallOnTimeSubmissionRate"), "On-Time Rate", "Overall");
-//
-//        return ChartFactory.createBarChart(
-//                "Submission Rates",
-//                "Type",
-//                "Percentage",
-//                dataset,
-//                PlotOrientation.VERTICAL,
-//                true,
-//                true,
-//                false
-//        );
-//    }
-
-//    private JFreeChart createGradeDistributionChart(Map<String, Object> statistics) {
-//        DefaultPieDataset dataset = new DefaultPieDataset();
-//        @SuppressWarnings("unchecked")
-//        List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
-//
-//        // Aggregate grade distributions across all assignments
-//        Map<String, Integer> totalGradeDistribution = new HashMap<>();
-//        for (Map<String, Object> assignment : assignmentsStats) {
-//            @SuppressWarnings("unchecked")
-//            Map<String, Integer> distribution = (Map<String, Integer>) assignment.get("gradeDistribution");
-//            distribution.forEach((grade, count) ->
-//                    totalGradeDistribution.merge(grade, count, Integer::sum));
-//        }
-//
-//        totalGradeDistribution.forEach(dataset::setValue);
-//
-//        return ChartFactory.createPieChart(
-//                "Grade Distribution",
-//                dataset,
-//                true,
-//                true,
-//                false
-//        );
-//    }
 
     private JFreeChart createAttendanceChart(Map<String, Object> statistics) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
@@ -1090,31 +1047,6 @@ public class ReportService {
         );
     }
 
-//    private JFreeChart createAssignmentPerformanceChart(Map<String, Object> statistics) {
-//        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-//        @SuppressWarnings("unchecked")
-//        List<Map<String, Object>> assignmentsStats = (List<Map<String, Object>>) statistics.get("assignmentsStats");
-//        System.out.println("WE ARE IN ASSIGNMENT PERFORMANCE CHART");
-//        for (Map<String, Object> assignment : assignmentsStats) {
-//            String title = (String) assignment.get("assignmentTitle");
-//            System.out.println(title);
-//            dataset.addValue((Number) assignment.get("averageGrade"), "Average Grade", title);
-//            dataset.addValue((Number) assignment.get("highestGrade"), "Highest Grade", title);
-//            dataset.addValue((Number) assignment.get("lowestGrade"), "Lowest Grade", title);
-//        }
-//        System.out.println("-----------------------------------------");
-//
-//        return ChartFactory.createLineChart(
-//                "Assignment Performance",
-//                "Assignment",
-//                "Grade",
-//                dataset,
-//                PlotOrientation.VERTICAL,
-//                true,
-//                true,
-//                false
-//        );
-//    }
     private JFreeChart createAssignmentPerformanceChart(Map<String, Object> statistics) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
