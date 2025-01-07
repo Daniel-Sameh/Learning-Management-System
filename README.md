@@ -60,6 +60,7 @@ The **Learning Management System (LMS)** is a web-based backend application deve
 
 - **Framework:** Spring Boot
 - **Database:** PostgreSQL (cloud-hosted)
+- **ORM:** Hibernate/JPA
 - **Authentication:** JWT-based authentication
 - **File Storage:** Cloudinary for media uploads
 - **APIs:** RESTful endpoints
@@ -104,18 +105,39 @@ The **Learning Management System (LMS)** is a web-based backend application deve
 
 ### 📚 Course Management
 - **Create Course (POST):** `/api/courses/create`
+  - Allows instructors to create new courses with name, code, and assigned instructor.
 - **Enroll in Course (POST):** `/api/courses/{courseId}/enroll`
+  - Enables students to enroll in a course.
+- **Student Enroll to Course (POST):** `/api/courses/{courseId}/enroll/{studentId}`
+  - Allows admin or instructors to enroll a specific student into a course.
 - **View Courses (GET):** `/api/courses/view`
-- **Remove Student (DELETE):** `/api/courses/{courseId}/remove/{studentId}`
+  - Fetches a list of all available courses.
 - **Update Course (PUT):** `/api/courses/{courseId}/update`
+  - Updates course information such as name, code, and instructor.
+- **Remove Student from Course (DELETE):** `/api/courses/{courseId}/remove/{studentId}`
+  - Allows instructors to remove a student from a course.
 - **Get Students in Course (GET):** `/api/courses/{courseId}/students`
+  - Retrieves a list of all students enrolled in a specific course.
+- **Create Lecture (POST):** `/api/lectures/create`
+  - Instructors can create new lectures with courseId, date, and name.
+- **Start Lecture (POST):** `/api/lectures/{lectureId}/start`
+  - Instructors start a lecture by providing the lecture ID.
+- **Attend Lecture (POST):** `/api/lectures/{lectureId}/attend`
+  - Students can mark their attendance by providing the OTP.
+- **End Lecture (POST):** `/api/lectures/{lectureId}/end`
+  - Instructors can end an ongoing lecture.
 
 ### 📝 Assignments
 - **Create Assignment (POST):** `/api/assignments/create/course/{courseId}`
+  - Allows instructors to create assignments with title, description, and deadline.
 - **Submit Assignment (POST):** `/api/assignments/submit/{assignmentId}`
+  - Enables students to submit assignments with file uploads.
 - **Get Submissions (GET):** `/api/assignments/get/{assignmentId}/submissions`
+  - Retrieves all submissions for a specific assignment.
 - **Grade Assignment (POST):** `/api/assignments/grade/{assignmentId}`
+  - Allows instructors to grade a specific submission.
 - **Get Assignment Details (GET):** `/api/assignments/get/{assignmentId}`
+  - Fetches details of a specific assignment.
 
 ### 📋 Quiz Management
 - **Create Manual Quiz (POST):** `/api/quizzes/create/manual`
@@ -124,6 +146,7 @@ The **Learning Management System (LMS)** is a web-based backend application deve
 - **Get Quiz Details (GET):** `/api/quizzes/get/{quizId}`
 - **Get Quizzes in a Course (GET):** `/api/quizzes/get/course/{courseId}`
 - **Get Quizzes for Student (GET):** `/api/quizzes/get/student/{studentId}`
+- **Get Quizzes for Instructor (GET):** `/api/quizzes/get/instructor/{instructorId}`
 - **Update Quiz (PUT):** `/api/quizzes/update/{quizId}`
 - **Delete Quiz (DELETE):** `/api/quizzes/delete/{quizId}`
 
@@ -133,13 +156,21 @@ The **Learning Management System (LMS)** is a web-based backend application deve
 - **Get Questions from Bank (GET):** `/api/Qbank/{bankId}/getquestions`
 - **Delete Question from Bank (DELETE):** `/api/Qbank/{bankId}/Question/{questionId}`
 
+### 📝 Posts Management
+- **Add Post (POST):** `/api/posts/create/{courseId}`
+- **Get Post (GET):** `/api/posts/get/{postId}/course/{courseId}`
+- **Get All Posts for a Course (GET):** `/api/posts/get/course/{courseId}`
+- **Update Post (PUT):** `/api/posts/update/{postId}`
+- **Delete Post (DELETE):** `/api/posts/delete/{postId}`
+
 ### 📊 Performance Tracking
 - **Generate Excel Report (GET):** `/api/reports/course/{courseId}/excel`
-- **Generate Statistics (GET):** `/api/reports/course/{courseId}/statistics`
+- **Generate Statistics Report (GET):** `/api/reports/course/{courseId}/statistics`
+- **Generate Charts (GET):** `/api/reports/course/{courseId}/charts`
 - **Track Assignment Performance (GET):** `/api/performance/assignment/{assignmentId}`
 - **Track Quiz Performance (GET):** `/api/performance/quiz/{quizId}`
 - **Get Attendance for Lecture (GET):** `/api/performance/attendance/{lectureId}`
-
+  
 ### 🔔 Notifications
 - **View Notifications (GET):** `/api/notifications`
 
